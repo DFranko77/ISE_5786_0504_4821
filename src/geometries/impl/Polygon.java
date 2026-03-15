@@ -1,10 +1,12 @@
-package primitives;
+package geometries.impl;
 
 import static primitives.Util.isZero;
 
 import java.util.List;
 
 import geometries.api.Geometry;
+import primitives.Point;
+import primitives.Vector;
 
 /**
  * Represents a convex polygon in a 3D Cartesian coordinate system.
@@ -22,7 +24,7 @@ public class Polygon extends Geometry {
    /** Ordered list of polygon vertices */
    protected final List<Point> _vertices;
    /** Plane containing the polygon */
-   protected final Plane       _plane;
+   protected final Plane _plane;
    /** Number of vertices */
    private final int           _size;
 
