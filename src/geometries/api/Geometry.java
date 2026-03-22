@@ -8,6 +8,7 @@ import primitives.Vector;
  */
 public abstract class Geometry {
 
+
     /**
      * Returns the normal vector to the geometry at the given point.
      *
