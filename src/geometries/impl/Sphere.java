@@ -22,8 +22,14 @@ public class Sphere extends RadialGeometry {
         this._center = center;
     }
 
+    /**
+     * Returns the outward unit normal vector to the sphere at the given surface point.
+     *
+     * @param point a point on the sphere surface
+     * @return normalized vector from the sphere center to {@code point}
+     */
     @Override
     public Vector getNormal(Point point) {
-        return null;
+        return point.subtract(_center).normalize();
     }
 }

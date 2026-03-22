@@ -91,8 +91,4 @@ public class Vector extends Point {
         return super.hashCode();
     }
 
-    @Override
-    public String toString() {
-        return "Vector" + _xyz;
-    }
 }

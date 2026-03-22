@@ -25,7 +25,9 @@ public class Plane extends Geometry {
      */
     public Plane(Point p1, Point p2, Point p3) {
         _point = p1;
-        _normal = null;
+        Vector v1 = p2.subtract(p1);
+        Vector v2 = p3.subtract(p1);
+        _normal = v1.crossProduct(v2).normalize();
     }
 
     /**
