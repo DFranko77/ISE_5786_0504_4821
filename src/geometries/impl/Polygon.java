@@ -1,11 +1,13 @@
 package geometries.impl;
 
+import static primitives.Util.alignZero;
 import static primitives.Util.isZero;
 
 import java.util.List;
 
 import geometries.api.Geometry;
 import primitives.Point;
+import primitives.Ray;
 import primitives.Vector;
 
 /**
@@ -77,4 +79,43 @@ public class Polygon extends Geometry {
 
    @Override
    public Vector getNormal(Point point) { return _plane.getNormal(point); }
+
+   @Override
+   public List<Point> findIntersections(Ray ray) {
+      // 1. Find intersection with the plane
+      List<Point> intersections = _plane.findIntersections(ray);
+      if (intersections == null) return null;
+
+      Point p0 = ray.origin();
+      Vector v = ray.direction();
+
+      // 2. Check if the intersection point is inside the polygon
+      List<Point> vertices = _vertices;
+      int size = vertices.size();
+
+      try {
+         Vector v1 = vertices.get(size - 1).subtract(p0);
+         Vector v2 = vertices.get(0).subtract(p0);
+         Vector n = v1.crossProduct(v2).normalize();
+         double sign = alignZero(v.dotProduct(n));
+
+         if (isZero(sign)) return null;
+         boolean positive = sign > 0;
+
+         for (int i = 1; i < size; ++i) {
+            v1 = v2;
+            v2 = vertices.get(i).subtract(p0);
+            n = v1.crossProduct(v2).normalize();
+            sign = alignZero(v.dotProduct(n));
+
+            if (isZero(sign)) return null;
+            if (positive != (sign > 0)) return null;
+         }
+      } catch (IllegalArgumentException e) {
+         // Ray origin is on one of the lines containing the edges
+         return null;
+      }
+
+      return intersections;
+   }
 }

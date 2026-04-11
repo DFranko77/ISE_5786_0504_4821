@@ -1,0 +1,54 @@
+package geometries.impl;
+
+import geometries.api.Intersectable;
+import primitives.Point;
+import primitives.Ray;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Composite container of {@link Intersectable} geometries.
+ */
+public class Geometries implements Intersectable {
+
+    /**
+     * The geometries contained in this composite.
+     */
+    private final List<Intersectable> geometries = new ArrayList<>();
+
+    /**
+     * Constructs a composite from the given geometries.
+     *
+     * @param geometries the geometries to add initially
+     */
+    public Geometries(Intersectable... geometries) {
+        add(geometries);
+    }
+
+    /**
+     * Adds the given geometries to this composite.
+     *
+     * @param geometries the geometries to add
+     */
+    public void add(Intersectable... geometries) {
+        this.geometries.addAll(List.of(geometries));
+    }
+
+    @Override
+    public List<Point> findIntersections(Ray ray) {
+        List<Point> intersections = null;
+
+        for (Intersectable geometry : geometries) {
+            List<Point> geometryIntersections = geometry.findIntersections(ray);
+            if (geometryIntersections != null) {
+                if (intersections == null) {
+                    intersections = new ArrayList<>();
+                }
+                intersections.addAll(geometryIntersections);
+            }
+        }
+
+        return intersections;
+    }
+}

@@ -1,5 +1,7 @@
 package primitives;
 
+import static primitives.Util.isZero;
+
 /**
  * Represents a ray (half-line) in 3D space, defined by an origin point and a normalized direction vector.
  */
@@ -28,6 +30,16 @@ public class Ray {
 
     /** Returns the normalized direction vector of the ray. */
     public Vector direction() { return _direction; }
+
+    /**
+     * Returns the point on the ray's line at signed distance {@code t} from the ray origin.
+     *
+     * @param t the signed distance from the ray origin
+     * @return the point located at distance {@code t} along the ray's line
+     */
+    public Point getPoint(double t) {
+        return isZero(t) ? _origin : _origin.add(_direction.scale(t));
+    }
 
     @Override
     public boolean equals(Object o) {

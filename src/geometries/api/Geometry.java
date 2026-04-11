@@ -3,10 +3,12 @@ package geometries.api;
 import primitives.Point;
 import primitives.Vector;
 
+import java.io.Serializable;
+
 /**
  * Base type for geometric objects.
  */
-public abstract class Geometry {
+public abstract class Geometry implements Intersectable {
 
 
     /**

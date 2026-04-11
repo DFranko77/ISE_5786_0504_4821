@@ -2,7 +2,13 @@ package geometries.impl;
 
 import geometries.api.Geometry;
 import primitives.Point;
+import primitives.Ray;
 import primitives.Vector;
+
+import java.util.List;
+
+import static primitives.Util.alignZero;
+import static primitives.Util.isZero;
 
 /**
  * Represents a plane in 3D space.
@@ -44,5 +50,26 @@ public class Plane extends Geometry {
     @Override
     public Vector getNormal(Point point) {
         return _normal;
+    }
+
+    @Override
+    public List<Point> findIntersections(Ray ray) {
+        Point p0 = ray.origin();
+        if (_point.equals(p0)) {
+            return null;
+        }
+
+        Vector v = ray.direction();
+        double nv = alignZero(_normal.dotProduct(v));
+        if (isZero(nv)) {
+            return null;
+        }
+
+        double t = alignZero(_normal.dotProduct(_point.subtract(p0)) / nv);
+        if (t <= 0) {
+            return null;
+        }
+
+        return List.of(ray.getPoint(t));
     }
 }

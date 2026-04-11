@@ -2,7 +2,10 @@ package geometries.impl;
 
 import org.junit.jupiter.api.Test;
 import primitives.Point;
+import primitives.Ray;
 import primitives.Vector;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -141,6 +144,65 @@ class PlaneTests {
                             "Plane normal must remain perpendicular to the first in-plane vector");
                     assertEquals(0d, normal.dotProduct(edge2), DELTA,
                             "Plane normal must remain perpendicular to the second in-plane vector");
+                });
+    }
+
+    /**
+     * Tests {@link Plane#findIntersections(Ray)}.
+     */
+    @Test
+    void testFindIntersections() {
+        final int epTestCases = 2;
+        final int bvTestCases = 5;
+
+        Plane plane = new Plane(new Point(0, 0, 1), Vector.AXIS_Z);
+
+        // ============ EP: Equivalence Partitions Tests ============
+        assertAll("EP (" + epTestCases + " cases)",
+                () -> {
+                    // TC EP01: Ray is neither parallel nor orthogonal to the plane and intersects it in front of the origin.
+                    Ray ray = new Ray(new Point(0, 0, 0), new Vector(1, 0, 1));
+                    assertEquals(List.of(new Point(1, 0, 1)), plane.findIntersections(ray),
+                            "Plane should return the single forward intersection point");
+                },
+                () -> {
+                    // TC EP02: Ray points away from the plane, so the mathematical intersection lies behind the ray origin.
+                    Ray ray = new Ray(new Point(0, 0, 2), new Vector(1, 0, 1));
+                    assertNull(plane.findIntersections(ray),
+                            "Plane should not return intersections behind the ray origin");
+                });
+
+        // ============ BVA: Boundary Value Analysis Tests ============
+        assertAll("BVA (" + bvTestCases + " cases)",
+                () -> {
+                    // TC BV01: Ray is parallel to the plane and does not lie in it.
+                    Ray ray = new Ray(new Point(0, 0, 0), Vector.AXIS_X);
+                    assertNull(plane.findIntersections(ray),
+                            "Parallel ray outside the plane should not intersect it");
+                },
+                () -> {
+                    // TC BV02: Ray lies entirely in the plane.
+                    Ray ray = new Ray(new Point(0, 0, 1), Vector.AXIS_X);
+                    assertNull(plane.findIntersections(ray),
+                            "Ray contained in the plane should not report intersections");
+                },
+                () -> {
+                    // TC BV03: Ray is orthogonal to the plane and starts before it.
+                    Ray ray = new Ray(new Point(0, 0, 0), Vector.AXIS_Z);
+                    assertEquals(List.of(new Point(0, 0, 1)), plane.findIntersections(ray),
+                            "Orthogonal ray should intersect the plane once when starting before it");
+                },
+                () -> {
+                    // TC BV04: Ray is orthogonal to the plane and starts on it.
+                    Ray ray = new Ray(new Point(0, 0, 1), Vector.AXIS_Z);
+                    assertNull(plane.findIntersections(ray),
+                            "Ray starting on the plane should not report its origin as an intersection");
+                },
+                () -> {
+                    // TC BV05: Ray is orthogonal to the plane and starts after it.
+                    Ray ray = new Ray(new Point(0, 0, 2), Vector.AXIS_Z);
+                    assertNull(plane.findIntersections(ray),
+                            "Orthogonal ray starting beyond the plane should not intersect it");
                 });
     }
 }

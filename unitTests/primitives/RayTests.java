@@ -62,4 +62,36 @@ class RayTests {
                             "Ray constructor should preserve an already normalized direction");
                 });
     }
+
+    /**
+     * Tests {@link Ray#getPoint(double)}.
+     */
+    @Test
+    void testGetPoint() {
+        final int epTestCases = 2;
+        final int bvTestCases = 1;
+
+        Ray ray = new Ray(new Point(1, 2, 3), new Vector(1, 2, 2));
+
+        // ============ EP: Equivalence Partitions Tests ============
+        assertAll("EP (" + epTestCases + " cases)",
+                () -> {
+                    // TC EP01: Request a point in the positive direction of the ray line. The returned point should be shifted forward by t units.
+                    assertEquals(new Point(2, 4, 5), ray.getPoint(3),
+                            "getPoint should return the point located t units forward on the ray line");
+                },
+                () -> {
+                    // TC EP02: Request a point in the negative direction of the ray line. The returned point should be shifted backward by |t| units.
+                    assertEquals(new Point(0, 0, 1), ray.getPoint(-3),
+                            "getPoint should return the point located |t| units backward on the ray line");
+                });
+
+        // ============ BVA: Boundary Value Analysis Tests ============
+        assertAll("BVA (" + bvTestCases + " cases)",
+                () -> {
+                    // TC BV01: Request the point at zero distance from the ray origin. The origin itself should be returned.
+                    assertEquals(new Point(1, 2, 3), ray.getPoint(0),
+                            "getPoint with t = 0 should return the ray origin");
+                });
+    }
 }
