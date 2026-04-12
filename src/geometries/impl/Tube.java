@@ -6,6 +6,7 @@ import primitives.Vector;
 
 import java.util.List;
 
+import static primitives.Util.alignZero;
 import static primitives.Util.isZero;
 
 /**
@@ -53,6 +54,52 @@ public class Tube extends RadialGeometry {
 
     @Override
     public List<Point> findIntersections(Ray ray) {
-        return null;
+        Point p0 = ray.origin();
+        Vector v = ray.direction();
+        Point axisOrigin = _axis.origin();
+        Vector axisDirection = _axis.direction();
+
+        double vAxis = v.dotProduct(axisDirection);
+        double a = alignZero(v.lengthSquared() - vAxis * vAxis);
+
+        if (isZero(a)) {
+            return null;
+        }
+
+        double b;
+        double c;
+
+        if (axisOrigin.equals(p0)) {
+            b = 0;
+            c = -_radiusSquared;
+        } else {
+            Vector deltaP = p0.subtract(axisOrigin);
+            double deltaPAxis = deltaP.dotProduct(axisDirection);
+
+            b = alignZero(2 * (v.dotProduct(deltaP) - vAxis * deltaPAxis));
+            c = alignZero(deltaP.lengthSquared() - deltaPAxis * deltaPAxis - _radiusSquared);
+        }
+
+        double discriminant = alignZero(b * b - 4 * a * c);
+        if (discriminant <= 0) {
+            return null;
+        }
+
+        double sqrtDiscriminant = Math.sqrt(discriminant);
+        double denominator = 2 * a;
+        double t1 = alignZero((-b - sqrtDiscriminant) / denominator);
+        double t2 = alignZero((-b + sqrtDiscriminant) / denominator);
+
+        if (t1 > 0 && t2 > 0) {
+            Point p1 = ray.getPoint(t1);
+            Point p2 = ray.getPoint(t2);
+            return t1 < t2 ? List.of(p1, p2) : List.of(p2, p1);
+        }
+
+        return t1 > 0
+                ? List.of(ray.getPoint(t1))
+                : t2 > 0
+                ? List.of(ray.getPoint(t2))
+                : null;
     }
 }

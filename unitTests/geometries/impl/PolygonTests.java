@@ -212,7 +212,7 @@ class PolygonTests {
      * Test method for {@link geometries.impl.Polygon#findIntersections(primitives.Ray)}.
      */
     @Test
-    void testfindIntersectionsRay() {
+    void testFindIntersectionsRay() {
         Polygon pol        = new Polygon(new Point(0, 0, 1), new Point(2, 0, 1), new Point(2, 2, 1), new Point(0, 2, 1));
         Plane   pl         = new Plane(new Point(0, 0, 1), new Point(1, 0, 1), new Point(0, 1, 1));
         Ray ray;
