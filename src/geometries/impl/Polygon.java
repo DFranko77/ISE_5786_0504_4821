@@ -77,9 +77,25 @@ public class Polygon extends Geometry {
       }
    }
 
+   /**
+    * Returns the polygon normal vector at the given point.
+    * For a polygon, the normal is constant across the whole surface.
+    *
+    * @param point a point on the polygon surface
+    * @return the normalized polygon normal
+    */
    @Override
    public Vector getNormal(Point point) { return _plane.getNormal(point); }
 
+   /**
+    * Finds the intersection between a ray and this polygon.
+    * The method first intersects the supporting plane and then checks whether
+    * the hit point is inside the polygon boundaries.
+    *
+    * @param ray the ray to test
+    * @return a single-point list if the ray intersects inside the polygon;
+    *         otherwise {@code null}
+    */
    @Override
    public List<Point> findIntersections(Ray ray) {
       // 1. Find intersection with the plane

@@ -13,6 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * Unit tests for {@link Geometries}.
  */
 public class GeometriesTests {
+    private static final Point P1 = new Point(3, 2, 2);
+    private static final Point P2 = new Point(7, 2, 2);
+    private static final Point P3 = new Point(11, 2, 2);
+    private static final double R1 = 1d;
+    private static final Vector V1 = Vector.AXIS_X;
 
     /**
      * Tests {@link Geometries#add(geometries.api.Intersectable...)}.
@@ -30,11 +35,11 @@ public class GeometriesTests {
                             "Empty Geometries construction should not throw an exception");
 
                     assertDoesNotThrow(() -> geometries.add(
-                                    new Sphere(new Point(3, 2, 2), 1d),
-                                    new Sphere(new Point(7, 2, 2), 1d)),
+                                    new Sphere(P1, R1),
+                                    new Sphere(P2, R1)),
                             "Adding valid geometries should not throw an exception");
 
-                    List<Point> intersections = geometries.findIntersections(new Ray(new Point(1, 2, 2), Vector.AXIS_X));
+                    List<Point> intersections = geometries.findIntersections(new Ray(new Point(1, 2, 2), V1));
 
                     assertNotNull(intersections,
                             "Ray intersecting added geometries should return intersection points");
@@ -51,7 +56,7 @@ public class GeometriesTests {
 
                     assertDoesNotThrow(() -> geometries.add(),
                             "Adding no geometries should not throw an exception");
-                    assertNull(geometries.findIntersections(new Ray(new Point(1, 2, 2), Vector.AXIS_X)),
+                    assertNull(geometries.findIntersections(new Ray(new Point(1, 2, 2), V1)),
                             "Empty composite should return null when no geometries were added");
                 });
     }
@@ -65,16 +70,16 @@ public class GeometriesTests {
         final int bvTestCases = 3;
 
         Geometries geometries = assertDoesNotThrow(() -> new Geometries(
-                        new Sphere(new Point(3, 2, 2), 1d),
-                        new Sphere(new Point(7, 2, 2), 1d),
-                        new Sphere(new Point(11, 2, 2), 1d)),
+                        new Sphere(P1, R1),
+                        new Sphere(P2, R1),
+                        new Sphere(P3, R1)),
                 "Geometries construction should not throw an exception for valid intersectables");
 
         // ============ EP: Equivalence Partitions Tests ============
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Ray intersects some, but not all, of the geometries. Only the total number of intersection points should be checked.
-                    Ray ray = new Ray(new Point(5, 2, 2), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(5, 2, 2), V1);
                     List<Point> intersections = geometries.findIntersections(ray);
 
                     assertNotNull(intersections,
@@ -87,13 +92,13 @@ public class GeometriesTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Ray misses all geometries. The method should return null and not an empty list.
-                    Ray ray = new Ray(new Point(13, 2, 2), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(13, 2, 2), V1);
                     assertNull(geometries.findIntersections(ray),
                             "Ray missing all geometries should return null");
                 },
                 () -> {
                     // TC BV02: Ray intersects exactly one geometry. Only the number of returned points should be checked.
-                    Ray ray = new Ray(new Point(9, 2, 2), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(9, 2, 2), V1);
                     List<Point> intersections = geometries.findIntersections(ray);
 
                     assertNotNull(intersections,
@@ -103,7 +108,7 @@ public class GeometriesTests {
                 },
                 () -> {
                     // TC BV03: Ray intersects all geometries. Only the number of returned points should be checked.
-                    Ray ray = new Ray(new Point(1, 2, 2), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(1, 2, 2), V1);
                     List<Point> intersections = geometries.findIntersections(ray);
 
                     assertNotNull(intersections,

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Composite container of {@link Intersectable} geometries.
  */
-public class Geometries implements Intersectable {
+public class Geometries extends Intersectable {
 
     /**
      * The geometries contained in this composite.
@@ -35,6 +35,12 @@ public class Geometries implements Intersectable {
         this.geometries.addAll(List.of(geometries));
     }
 
+    /**
+     * Finds all intersections between the given ray and all contained geometries.
+     *
+     * @param ray the ray to test
+     * @return a merged list of all intersection points, or {@code null} if none are found
+     */
     @Override
     public List<Point> findIntersections(Ray ray) {
         List<Point> intersections = null;

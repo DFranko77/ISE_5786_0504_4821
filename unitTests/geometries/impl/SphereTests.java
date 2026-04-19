@@ -19,6 +19,9 @@ class SphereTests {
      * {@link Sphere#getNormal(Point)}.
      */
     private static final double DELTA = 1e-6;
+    private static final Point P1 = new Point(2, 1, 1);
+    private static final double R1 = 1d;
+    private static final Vector V1 = Vector.AXIS_X;
 
     /**
      * Tests {@link Sphere#getNormal(Point)}.
@@ -27,7 +30,7 @@ class SphereTests {
     void testGetNormal() {
         final int epTestCases = 1;
 
-        Sphere sphere = assertDoesNotThrow(() -> new Sphere(new Point(1, 0, 0), 1d),
+        Sphere sphere = assertDoesNotThrow(() -> new Sphere(new Point(1, 0, 0), R1),
                 "Sphere construction should not throw an exception for valid center and radius");
 
         // ============ EP: Equivalence Partitions Tests ============
@@ -54,19 +57,19 @@ class SphereTests {
         final int bvTestCases = 13;
         final double offset = Math.sqrt(3) / 2;
 
-        Sphere sphere = new Sphere(new Point(2, 1, 1), 1d);
+        Sphere sphere = new Sphere(P1, R1);
 
         // ============ EP: Equivalence Partitions Tests ============
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Ray line is outside the sphere. No intersections are expected.
-                    Ray ray = new Ray(new Point(0, 3, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(0, 3, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Ray whose line is outside the sphere should not intersect it");
                 },
                 () -> {
                     // TC EP02: Ray starts before the sphere and crosses it. Two forward intersections are expected.
-                    Ray ray = new Ray(new Point(0, 1.5, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(0, 1.5, 1), V1);
                     assertEquals(List.of(
                                     new Point(2 - offset, 1.5, 1),
                                     new Point(2 + offset, 1.5, 1)),
@@ -75,13 +78,13 @@ class SphereTests {
                 },
                 () -> {
                     // TC EP03: Ray starts inside the sphere on a non-central, non-orthogonal line. One exit intersection is expected.
-                    Ray ray = new Ray(new Point(1.5, 1.5, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(1.5, 1.5, 1), V1);
                     assertEquals(List.of(new Point(2 + offset, 1.5, 1)), sphere.findIntersections(ray),
                             "Ray starting inside the sphere should return the single exit point");
                 },
                 () -> {
                     // TC EP04: Ray starts after the sphere on an intersecting line. No forward intersections are expected.
-                    Ray ray = new Ray(new Point(4, 1.5, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(4, 1.5, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Ray starting beyond the sphere should not intersect it");
                 });
@@ -90,7 +93,7 @@ class SphereTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV11: Ray starts on the sphere and goes inward on a line that does not pass through the center.
-                    Ray ray = new Ray(new Point(2 - offset, 1.5, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(2 - offset, 1.5, 1), V1);
                     assertEquals(List.of(new Point(2 + offset, 1.5, 1)), sphere.findIntersections(ray),
                             "Ray starting on the sphere and going inward should return the second surface point");
                 },
@@ -102,67 +105,67 @@ class SphereTests {
                 },
                 () -> {
                     // TC BV21: Ray goes through the center and starts before the sphere.
-                    Ray ray = new Ray(new Point(0, 1, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(0, 1, 1), V1);
                     assertEquals(List.of(new Point(1, 1, 1), new Point(3, 1, 1)), sphere.findIntersections(ray),
                             "Central ray starting before the sphere should return two intersections");
                 },
                 () -> {
                     // TC BV22: Ray goes through the center and starts on the sphere heading inward.
-                    Ray ray = new Ray(new Point(1, 1, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(1, 1, 1), V1);
                     assertEquals(List.of(new Point(3, 1, 1)), sphere.findIntersections(ray),
                             "Central ray starting on the sphere and heading inward should return one exit point");
                 },
                 () -> {
                     // TC BV23: Ray goes through the center and starts inside the sphere.
-                    Ray ray = new Ray(new Point(1.5, 1, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(1.5, 1, 1), V1);
                     assertEquals(List.of(new Point(3, 1, 1)), sphere.findIntersections(ray),
                             "Central ray starting inside the sphere should return one exit point");
                 },
                 () -> {
                     // TC BV24: Ray starts at the sphere center.
-                    Ray ray = new Ray(new Point(2, 1, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(P1, V1);
                     assertEquals(List.of(new Point(3, 1, 1)), sphere.findIntersections(ray),
                             "Ray from the sphere center should return one surface point");
                 },
                 () -> {
                     // TC BV25: Ray goes through the center and starts on the sphere heading outward.
-                    Ray ray = new Ray(new Point(3, 1, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(3, 1, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Central ray starting on the sphere and heading outward should not intersect it again");
                 },
                 () -> {
                     // TC BV26: Ray goes through the center line and starts after the sphere.
-                    Ray ray = new Ray(new Point(4, 1, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(4, 1, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Central ray starting after the sphere should not intersect it");
                 },
                 () -> {
                     // TC BV31: Ray line is tangent to the sphere and starts before the tangent point.
-                    Ray ray = new Ray(new Point(0, 2, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(0, 2, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Ray approaching the tangent point should not count as intersecting the sphere");
                 },
                 () -> {
                     // TC BV32: Ray starts at the tangent point.
-                    Ray ray = new Ray(new Point(2, 2, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(2, 2, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Ray starting at the tangent point should not intersect the sphere");
                 },
                 () -> {
                     // TC BV33: Ray line is tangent to the sphere and starts after the tangent point.
-                    Ray ray = new Ray(new Point(4, 2, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(4, 2, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Ray starting after the tangent point should not intersect the sphere");
                 },
                 () -> {
                     // TC BV41: Ray is orthogonal to the line from its start point to the sphere center and starts outside the sphere.
-                    Ray ray = new Ray(new Point(2, 3, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(2, 3, 1), V1);
                     assertNull(sphere.findIntersections(ray),
                             "Orthogonal ray outside the sphere should not intersect it");
                 },
                 () -> {
                     // TC BV42: Ray is orthogonal to the line from its start point to the sphere center and starts inside the sphere.
-                    Ray ray = new Ray(new Point(2, 1.5, 1), Vector.AXIS_X);
+                    Ray ray = new Ray(new Point(2, 1.5, 1), V1);
                     assertEquals(List.of(new Point(2 + offset, 1.5, 1)), sphere.findIntersections(ray),
                             "Orthogonal ray starting inside the sphere should return one exit point");
                 });

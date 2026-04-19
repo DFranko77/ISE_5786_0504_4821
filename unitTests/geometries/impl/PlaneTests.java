@@ -19,6 +19,10 @@ class PlaneTests {
      * {@link Plane#getNormal(Point)} and by planes created through the constructors.
      */
     private static final double DELTA = 1e-6;
+    private static final Point P1 = new Point(0, 0, 1);
+    private static final Point P2 = new Point(1, 0, 0);
+    private static final Point P3 = new Point(0, 1, 0);
+    private static final Vector V1 = new Vector(0, 3, 4);
 
     /**
      * Tests {@link Plane#Plane(Point, Vector)}.
@@ -31,8 +35,8 @@ class PlaneTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Create a plane from a point and a non-unit normal vector. The stored normal should be normalized and parallel to the input normal.
-                    Vector inputNormal = new Vector(0, 3, 4);
-                    Plane plane = assertDoesNotThrow(() -> new Plane(new Point(0, 0, 1), inputNormal),
+                    Vector inputNormal = V1;
+                    Plane plane = assertDoesNotThrow(() -> new Plane(P1, inputNormal),
                             "Plane construction should not throw an exception for valid point-normal data");
                     Vector normal = assertDoesNotThrow(() -> plane.getNormal(new Point(1, 0, 1)),
                             "getNormal should not throw an exception for a valid plane point");
@@ -57,9 +61,9 @@ class PlaneTests {
                 () -> {
                     // TC EP01: Create a plane from three distinct non-collinear points. Construction should succeed for a valid plane definition.
                     assertDoesNotThrow(() -> new Plane(
-                                    new Point(0, 0, 1),
-                                    new Point(1, 0, 0),
-                                    new Point(0, 1, 0)),
+                                    P1,
+                                    P2,
+                                    P3),
                             "Plane construction should succeed for three distinct non-collinear points");
                 });
 
@@ -108,13 +112,13 @@ class PlaneTests {
         final int bvTestCases = 1;
 
         Plane plane = assertDoesNotThrow(() -> new Plane(
-                        new Point(0, 0, 1),
-                        new Point(1, 0, 0),
-                        new Point(0, 1, 0)),
+                        P1,
+                        P2,
+                        P3),
                 "Plane construction should not throw an exception for valid points");
 
-        Vector edge1 = new Point(1, 0, 0).subtract(new Point(0, 0, 1));
-        Vector edge2 = new Point(0, 1, 0).subtract(new Point(0, 0, 1));
+        Vector edge1 = P2.subtract(P1);
+        Vector edge2 = P3.subtract(P1);
 
         // ============ EP: Equivalence Partitions Tests ============
         assertAll("EP (" + epTestCases + " cases)",
@@ -155,7 +159,7 @@ class PlaneTests {
         final int epTestCases = 2;
         final int bvTestCases = 5;
 
-        Plane plane = new Plane(new Point(0, 0, 1), Vector.AXIS_Z);
+         Plane plane = new Plane(P1, Vector.AXIS_Z);
 
         // ============ EP: Equivalence Partitions Tests ============
         assertAll("EP (" + epTestCases + " cases)",

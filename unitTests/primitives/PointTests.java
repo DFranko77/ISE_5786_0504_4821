@@ -14,6 +14,12 @@ class PointTests {
      * {@link Point#distance(Point)}.
      */
     private static final double DELTA = 1e-6;
+    private static final Point P1 = new Point(1, 0, 0);
+    private static final Point P2 = new Point(2, 0, 0);
+    private static final Point P3 = new Point(1, 2, 3);
+    private static final Point P4 = new Point(4, 6, 3);
+    private static final Vector V1 = new Vector(1, 0, 0);
+    private static final Vector V2 = new Vector(-1, 0, 0);
 
     /**
      * Tests {@link Point#add(Vector)}.
@@ -27,12 +33,12 @@ class PointTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Add a regular vector to a point. The result should be the translated point.
-                    Point p1 = new Point(1, 0, 0);
-                    Vector v1 = new Vector(1, 0, 0);
+                    Point p1 = P1;
+                    Vector v1 = V1;
                     Point result = assertDoesNotThrow(() -> p1.add(v1),
                             "Point addition should not throw an exception");
 
-                    assertEquals(new Point(2, 0, 0), result,
+                    assertEquals(P2, result,
                             "Point addition result is incorrect");
                 });
 
@@ -40,8 +46,8 @@ class PointTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Add the inverse vector so the result lands on the origin. The origin should be returned correctly.
-                    Point p1 = new Point(1, 0, 0);
-                    Vector v1 = new Vector(-1, 0, 0);
+                    Point p1 = P1;
+                    Vector v1 = V2;
                     Point result = assertDoesNotThrow(() -> p1.add(v1),
                             "Point addition to the origin should not throw an exception");
 
@@ -94,8 +100,8 @@ class PointTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Measure squared distance between two distinct points. The squared result should match the Pythagorean sum.
-                    Point p1 = new Point(1, 2, 3);
-                    Point p2 = new Point(4, 6, 3);
+                    Point p1 = P3;
+                    Point p2 = P4;
                     double result = assertDoesNotThrow(() -> p1.distanceSquared(p2),
                             "distanceSquared should not throw an exception for valid points");
 
@@ -107,7 +113,7 @@ class PointTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Measure squared distance from a point to itself. The minimal distance value should be zero.
-                    Point p1 = new Point(1, 2, 3);
+                    Point p1 = P3;
                     double result = assertDoesNotThrow(() -> p1.distanceSquared(p1),
                             "distanceSquared should not throw an exception for identical points");
 
@@ -128,8 +134,8 @@ class PointTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Measure distance between two distinct points. The result should equal the Euclidean distance.
-                    Point p1 = new Point(1, 2, 3);
-                    Point p2 = new Point(4, 6, 3);
+                    Point p1 = P3;
+                    Point p2 = P4;
                     double result = assertDoesNotThrow(() -> p1.distance(p2),
                             "distance should not throw an exception for valid points");
 
@@ -141,7 +147,7 @@ class PointTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Measure distance from a point to itself. The boundary value should be exactly zero.
-                    Point p1 = new Point(1, 2, 3);
+                    Point p1 = P3;
                     double result = assertDoesNotThrow(() -> p1.distance(p1),
                             "distance should not throw an exception for identical points");
 

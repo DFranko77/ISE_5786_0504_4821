@@ -15,6 +15,11 @@ class VectorTests {
      * {@link Vector#normalize()}.
      */
     private static final double DELTA = 1e-6;
+    private static final Vector V1 = new Vector(1, 2, 3);
+    private static final Vector V2 = new Vector(0, 3, -2);
+    private static final Vector V3 = new Vector(-2, -4, -6);
+    private static final Vector V4 = new Vector(1, 0, 0);
+    private static final Vector V5 = new Vector(1, -2, 3);
 
     /**
      * Tests {@link Vector#Vector(Double3)}.
@@ -33,7 +38,7 @@ class VectorTests {
                     Vector result = assertDoesNotThrow(() -> new Vector(xyz),
                             "Vector(Double3) should not throw an exception for a non-zero triad");
 
-                    assertEquals(new Vector(1, 2, 3), result,
+                    assertEquals(V1, result,
                             "Vector(Double3) stored incorrect coordinates");
                 });
 
@@ -61,7 +66,7 @@ class VectorTests {
                     Vector result = assertDoesNotThrow(() -> new Vector(1, 2, 3),
                             "Vector(double, double, double) should not throw an exception for non-zero coordinates");
 
-                    assertEquals(new Vector(1, 2, 3), result,
+                    assertEquals(V1, result,
                             "Vector(double, double, double) stored incorrect coordinates");
                 });
 
@@ -99,7 +104,7 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Add opposite vectors. This should attempt to create the forbidden zero vector and throw an exception.
-                    Vector v1 = new Vector(1, 0, 0);
+                    Vector v1 = V4;
                     Vector v2 = new Vector(-1, 0, 0);
 
                     assertThrows(IllegalArgumentException.class, () -> v1.add(v2),
@@ -151,7 +156,7 @@ class VectorTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Scale a vector by a positive factor. Each coordinate should be multiplied by that factor.
-                    Vector v = new Vector(1, -2, 3);
+                    Vector v = V5;
                     Vector result = assertDoesNotThrow(() -> v.scale(2),
                             "Scaling by a positive factor should not throw an exception");
 
@@ -160,7 +165,7 @@ class VectorTests {
                 },
                 () -> {
                     // TC EP02: Scale a vector by a negative factor. The result should flip direction and scale magnitude.
-                    Vector v = new Vector(1, -2, 3);
+                    Vector v = V5;
                     Vector result = assertDoesNotThrow(() -> v.scale(-1),
                             "Scaling by a negative factor should not throw an exception");
 
@@ -172,7 +177,7 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Scale a vector by zero. This should attempt to create the forbidden zero vector and throw an exception.
-                    Vector v = new Vector(1, -2, 3);
+                    Vector v = V5;
 
                     assertThrows(IllegalArgumentException.class, () -> v.scale(0),
                             "Scaling by zero should create the zero vector");
@@ -191,8 +196,8 @@ class VectorTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Compute the dot product of two non-orthogonal vectors. The result should match the algebraic sum.
-                    Vector v1 = new Vector(1, 2, 3);
-                    Vector v2 = new Vector(-2, -4, -6);
+                    Vector v1 = V1;
+                    Vector v2 = V3;
                     double result = assertDoesNotThrow(() -> v1.dotProduct(v2),
                             "dotProduct should not throw an exception for valid vectors");
 
@@ -204,8 +209,8 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Compute the dot product of orthogonal vectors. The boundary result should be zero.
-                    Vector v1 = new Vector(1, 2, 3);
-                    Vector v3 = new Vector(0, 3, -2);
+                    Vector v1 = V1;
+                    Vector v3 = V2;
                     double result = assertDoesNotThrow(() -> v1.dotProduct(v3),
                             "dotProduct should not throw an exception for orthogonal vectors");
 
@@ -226,8 +231,8 @@ class VectorTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Cross two non-parallel vectors. The result should be orthogonal to the first operand.
-                    Vector v1 = new Vector(1, 2, 3);
-                    Vector v2 = new Vector(0, 3, -2);
+                    Vector v1 = V1;
+                    Vector v2 = V2;
                     Vector vr = assertDoesNotThrow(() -> v1.crossProduct(v2),
                             "crossProduct should not throw an exception for non-parallel vectors");
 
@@ -236,8 +241,8 @@ class VectorTests {
                 },
                 () -> {
                     // TC EP02: Cross two non-parallel vectors. The result should also be orthogonal to the second operand.
-                    Vector v1 = new Vector(1, 2, 3);
-                    Vector v2 = new Vector(0, 3, -2);
+                    Vector v1 = V1;
+                    Vector v2 = V2;
                     Vector vr = assertDoesNotThrow(() -> v1.crossProduct(v2),
                             "crossProduct should not throw an exception for non-parallel vectors");
 
@@ -246,8 +251,8 @@ class VectorTests {
                 },
                 () -> {
                     // TC EP03: Cross two non-parallel vectors. The result magnitude should equal the product of operand lengths here.
-                    Vector v1 = new Vector(1, 2, 3);
-                    Vector v2 = new Vector(0, 3, -2);
+                    Vector v1 = V1;
+                    Vector v2 = V2;
                     Vector vr = assertDoesNotThrow(() -> v1.crossProduct(v2),
                             "crossProduct should not throw an exception for non-parallel vectors");
 
@@ -259,10 +264,10 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Cross parallel vectors. This should attempt to create the forbidden zero vector and throw an exception.
-                    Vector v1 = new Vector(1, 2, 3);
+                    Vector v1 = V1;
 
                     assertThrows(IllegalArgumentException.class,
-                            () -> v1.crossProduct(new Vector(-2, -4, -6)),
+                            () -> v1.crossProduct(V3),
                             "Cross product of parallel vectors should throw an exception");
                 });
     }
@@ -279,7 +284,7 @@ class VectorTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Compute squared length for a regular vector. The result should equal the sum of squared coordinates.
-                    Vector v = new Vector(1, 2, 3);
+                    Vector v = V1;
                     double result = assertDoesNotThrow(v::lengthSquared,
                             "lengthSquared should not throw an exception for a valid vector");
 
@@ -291,7 +296,7 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Compute squared length for a unit axis vector. The minimal non-zero squared length should be one.
-                    Vector v = new Vector(1, 0, 0);
+                    Vector v = V4;
                     double result = assertDoesNotThrow(v::lengthSquared,
                             "lengthSquared should not throw an exception for a unit vector");
 
@@ -324,7 +329,7 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Compute length for a unit axis vector. The minimal non-zero vector length should be one.
-                    Vector v = new Vector(1, 0, 0);
+                    Vector v = V4;
                     double result = assertDoesNotThrow(v::length,
                             "length should not throw an exception for a unit vector");
 
@@ -345,7 +350,7 @@ class VectorTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Normalize a regular vector. The method should return a new vector instance.
-                    Vector v = new Vector(1, 2, 3);
+                    Vector v = V1;
                     Vector normalized = assertDoesNotThrow(v::normalize,
                             "normalize should not throw an exception for a valid vector");
 
@@ -354,7 +359,7 @@ class VectorTests {
                 },
                 () -> {
                     // TC EP02: Normalize a regular vector. The result should have unit length.
-                    Vector v = new Vector(1, 2, 3);
+                    Vector v = V1;
                     Vector normalized = assertDoesNotThrow(v::normalize,
                             "normalize should not throw an exception for a valid vector");
 
@@ -366,7 +371,7 @@ class VectorTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Normalize a vector and compare direction to the original. The normalized result should remain parallel.
-                    Vector v = new Vector(1, 2, 3);
+                    Vector v = V1;
                     Vector normalized = assertDoesNotThrow(v::normalize,
                             "normalize should not throw an exception for a valid vector");
 

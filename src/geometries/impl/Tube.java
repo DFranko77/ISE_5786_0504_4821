@@ -43,11 +43,6 @@ public class Tube extends RadialGeometry {
         Point axisOrigin = _axis.origin();
         Vector axisDirection = _axis.direction();
         double projection = axisDirection.dotProduct(point.subtract(axisOrigin));
-
-        if (isZero(projection)) {
-            return point.subtract(axisOrigin).normalize();
-        }
-
         Point axisPoint = _axis.getPoint(projection);
         return point.subtract(axisPoint).normalize();
     }

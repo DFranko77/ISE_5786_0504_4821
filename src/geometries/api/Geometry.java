@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * Base type for geometric objects.
  */
-public abstract class Geometry implements Intersectable {
+public abstract class Geometry extends Intersectable {
 
 
     /**

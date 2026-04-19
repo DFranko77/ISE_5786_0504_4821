@@ -14,6 +14,9 @@ class RayTests {
      * {@link Ray#direction()}.
      */
     private static final double DELTA = 1e-6;
+    private static final Point P1 = new Point(1, 2, 3);
+    private static final Vector V1 = new Vector(0, 3, 4);
+    private static final Vector V2 = new Vector(1, 2, 2);
 
     /**
      * Tests {@link Ray#Ray(Point, Vector)}.
@@ -27,8 +30,8 @@ class RayTests {
         assertAll("EP (" + epTestCases + " cases)",
                 () -> {
                     // TC EP01: Create a ray with a regular origin point and a non-unit direction vector. Construction should preserve the origin and normalize the direction.
-                    Point origin = new Point(1, 2, 3);
-                    Vector direction = new Vector(0, 3, 4);
+                    Point origin = P1;
+                    Vector direction = V1;
                     Ray ray = assertDoesNotThrow(() -> new Ray(origin, direction),
                             "Ray construction should not throw an exception for valid arguments");
                     Point resultOrigin = assertDoesNotThrow(ray::origin,
@@ -71,7 +74,7 @@ class RayTests {
         final int epTestCases = 2;
         final int bvTestCases = 1;
 
-        Ray ray = new Ray(new Point(1, 2, 3), new Vector(1, 2, 2));
+        Ray ray = new Ray(P1, V2);
 
         // ============ EP: Equivalence Partitions Tests ============
         assertAll("EP (" + epTestCases + " cases)",
@@ -90,7 +93,7 @@ class RayTests {
         assertAll("BVA (" + bvTestCases + " cases)",
                 () -> {
                     // TC BV01: Request the point at zero distance from the ray origin. The origin itself should be returned.
-                    assertEquals(new Point(1, 2, 3), ray.getPoint(0),
+                    assertEquals(P1, ray.getPoint(0),
                             "getPoint with t = 0 should return the ray origin");
                 });
     }

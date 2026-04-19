@@ -43,9 +43,10 @@ public class Point {
     }
 
     /**
-     * subtracts
-     * @param p point to subtract from
-     * @return vector
+     * Returns the vector from the given point to this point.
+     *
+     * @param p the point to subtract
+     * @return the displacement vector {@code p -> this}
      */
     public Vector subtract(Point p) {
         return new Vector(_xyz.subtract(p._xyz));
