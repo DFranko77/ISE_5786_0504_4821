@@ -102,7 +102,7 @@ public final class Main {
         try {
             P1.subtract(P1);
             out.println("ERROR: (point - itself) does not throw an exception");
-        } catch (IllegalArgumentException _) { /* ignored */ } catch (Exception _) {
+        } catch (IllegalArgumentException e) { /* ignored */ } catch (Exception e) {
             out.println("ERROR: (point - itself) throws wrong exception");
         }
 
@@ -150,9 +150,9 @@ public final class Main {
             new Vector(0, 0, 0);
             new Vector(Double3.ZERO);
             out.println("ERROR: zero vector does not throw an exception");
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException e) {
             /* ignored */
-        } catch (Exception _) {
+        } catch (Exception e) {
             out.println("ERROR: zero vector throws wrong exception");
         }
 
@@ -169,7 +169,7 @@ public final class Main {
         try { // test that the vectors are co-lined
             V1.crossProduct(u);
             out.println("ERROR: the normalized vector is not parallel to the original one");
-        } catch (Exception _) { /* ignored */ }
+        } catch (Exception e) { /* ignored */ }
         if (V1.dotProduct(u) < 0)
             out.println("ERROR: the normalized vector is opposite to the original one");
 
@@ -179,7 +179,7 @@ public final class Main {
         try {
             V1.scale(0);
             out.println("ERROR: scale(0) should throw exception");
-        } catch (IllegalArgumentException _) { /* ignored */ }
+        } catch (IllegalArgumentException e) { /* ignored */ }
     }
 
     /**
@@ -190,17 +190,17 @@ public final class Main {
         try {
             V1.add(V1_OPPOSITE);
             out.println("ERROR: Vector + -itself does not throw an exception");
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException e) {
             /* ignored */
-        } catch (Exception _) {
+        } catch (Exception e) {
             out.println("ERROR: Vector + itself throws wrong exception");
         }
         try {
             V1.subtract(V1);
             out.println("ERROR: Vector - itself does not throw an exception");
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException e) {
             /* ignored */
-        } catch (Exception _) {
+        } catch (Exception e) {
             out.println("ERROR: Vector + itself throws wrong exception");
         }
         if (!V1.add(V2).equals(V1_OPPOSITE))
@@ -220,7 +220,7 @@ public final class Main {
         try { // test zero vector
             V1.crossProduct(V2);
             out.println("ERROR: crossProduct() for parallel vectors does not throw an exception");
-        } catch (Exception _) { /* ignored */ }
+        } catch (Exception e) { /* ignored */ }
         Vector vr = V1.crossProduct(V3);
         if (!isZero(vr.length() - V1.length() * V3.length()))
             out.println("ERROR: crossProduct() wrong result length");

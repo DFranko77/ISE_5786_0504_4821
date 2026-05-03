@@ -2,6 +2,8 @@ package primitives;
 
 import static primitives.Util.isZero;
 
+import java.util.List;
+
 /**
  * Represents a ray (half-line) in 3D space, defined by an origin point and a normalized direction vector.
  */
@@ -39,6 +41,29 @@ public class Ray {
      */
     public Point getPoint(double t) {
         return isZero(t) ? _origin : _origin.add(_direction.scale(t));
+    }
+
+    /**
+     * Finds the closest point to the ray origin from the provided list.
+     *
+     * @param points list of candidate points
+     * @return closest point, or {@code null}
+     */
+    public Point findClosestPoint(List<Point> points) {
+        if (points == null) return null;
+
+        Point closestPoint = null;
+        double closestDistanceSquared = Double.POSITIVE_INFINITY;
+
+        for (Point point : points) {
+            double currentDistanceSquared = point.distanceSquared(_origin);
+            if (currentDistanceSquared < closestDistanceSquared) {
+                closestDistanceSquared = currentDistanceSquared;
+                closestPoint = point;
+            }
+        }
+
+        return closestPoint;
     }
 
     @Override

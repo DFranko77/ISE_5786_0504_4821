@@ -1,6 +1,15 @@
 package geometries.impl;
 
+import primitives.Point;
 import primitives.Ray;
+import primitives.Vector;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static primitives.Util.alignZero;
+import static primitives.Util.isZero;
 
 /**
  * Represents a finite cylinder (tube with two caps) in 3D space.
@@ -9,6 +18,8 @@ public class Cylinder extends Tube {
 
     /** The height of the cylinder. */
     private final double _height;
+    /** Cached center point of the top base. */
+    private final Point _topCenter;
 
     /**
      * Constructs a cylinder from an axis ray, a radius, and a height.
@@ -20,5 +31,119 @@ public class Cylinder extends Tube {
     public Cylinder(double radius, Ray axis, double height) {
         super(radius, axis);
         this._height = height;
+        this._topCenter = axis.getPoint(height);
+    }
+
+    @Override
+    public Vector getNormal(Point point) {
+        Point baseCenter = _axis.origin();
+        Vector axisDirection = _axis.direction();
+
+        if (point.equals(baseCenter)) {
+            return axisDirection.scale(-1);
+        }
+        if (point.equals(_topCenter)) {
+            return axisDirection;
+        }
+
+        double projection = alignZero(axisDirection.dotProduct(point.subtract(baseCenter)));
+
+        if (isZero(projection)) {
+            return axisDirection.scale(-1);
+        }
+        if (isZero(projection - _height)) {
+            return axisDirection;
+        }
+
+        Point axisPoint = _axis.getPoint(projection);
+        return point.subtract(axisPoint).normalize();
+    }
+
+    @Override
+    public List<Point> findIntersections(Ray ray) {
+        List<Point> intersections = new ArrayList<>(4);
+
+        List<Point> sideIntersections = super.findIntersections(ray);
+        if (sideIntersections != null) {
+            for (Point intersection : sideIntersections) {
+                if (isOnFiniteCylinderShell(intersection)) {
+                    addIntersection(intersections, intersection);
+                }
+            }
+        }
+
+        Point bottomBaseIntersection = findBaseIntersection(ray, _axis.origin());
+        if (bottomBaseIntersection != null) {
+            addIntersection(intersections, bottomBaseIntersection);
+        }
+
+        Point topBaseIntersection = findBaseIntersection(ray, _topCenter);
+        if (topBaseIntersection != null) {
+            addIntersection(intersections, topBaseIntersection);
+        }
+
+        if (intersections.isEmpty()) {
+            return null;
+        }
+
+        intersections.sort(Comparator.comparingDouble(ray.origin()::distanceSquared));
+        return intersections;
+    }
+
+    /**
+     * Checks whether a point on the infinite tube lies on the finite cylinder shell.
+     *
+     * @param point point known to lie on the infinite tube
+     * @return {@code true} when the point projection is within the cylinder height range
+     */
+    private boolean isOnFiniteCylinderShell(Point point) {
+        double projection = alignZero(_axis.direction().dotProduct(point.subtract(_axis.origin())));
+        return projection >= 0 && alignZero(projection - _height) <= 0;
+    }
+
+    /**
+     * Finds the ray intersection with one cylinder base disk.
+     *
+     * @param ray       ray to intersect
+     * @param baseCenter center of the tested base disk
+     * @return the disk intersection point, or {@code null} when no forward hit exists
+     */
+    private Point findBaseIntersection(Ray ray, Point baseCenter) {
+        double denominator = alignZero(_axis.direction().dotProduct(ray.direction()));
+        if (isZero(denominator)) {
+            return null;
+        }
+
+        double numerator;
+        try {
+            numerator = alignZero(_axis.direction().dotProduct(baseCenter.subtract(ray.origin())));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+
+        double t = alignZero(numerator / denominator);
+        if (t <= 0) {
+            return null;
+        }
+
+        Point intersection = ray.getPoint(t);
+        return alignZero(intersection.distanceSquared(baseCenter) - _radiusSquared) <= 0
+                ? intersection
+                : null;
+    }
+
+    /**
+     * Adds a new intersection point unless an equal point is already present.
+     *
+     * @param intersections target list
+     * @param point         candidate intersection point
+     */
+    private void addIntersection(List<Point> intersections, Point point) {
+        for (Point existing : intersections) {
+            if (existing.equals(point)) {
+                return;
+            }
+        }
+        intersections.add(point);
     }
 }

@@ -4,9 +4,11 @@ import static primitives.Util.isZero;
 
 import java.util.MissingResourceException;
 
+import primitives.Color;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
+import scene.Scene;
 
 /**
  * Represents a camera in 3D space that generates rays through a view plane.
@@ -45,6 +47,12 @@ public class Camera implements Cloneable {
    /** Height of a single pixel. */
    private double _pixelHeight;
 
+   /** Image writer used for coloring and saving pixels. */
+   private ImageWriter _imageWriter;
+
+   /** Ray tracer used for converting rays into colors. */
+   private RayTracerBase _rayTracer;
+
    /** Private constructor; camera instances are created through the builder. */
    private Camera() {
    }
@@ -78,6 +86,71 @@ public class Camera implements Cloneable {
          pixelCenter = pixelCenter.add(_vUp.scale(yOffset));
 
       return new Ray(_p0, pixelCenter.subtract(_p0));
+   }
+
+   /**
+    * Renders the image by tracing a ray through every pixel.
+    *
+    * @return this camera for method chaining
+    */
+   public Camera renderImage() {
+      if (_imageWriter == null)
+         throw new IllegalStateException("Image writer is not initialized");
+      if (_rayTracer == null)
+         throw new IllegalStateException("Ray tracer is not initialized");
+
+      for (int i = 0; i < _nY; i++) {
+         for (int j = 0; j < _nX; j++) {
+            castRay(_nX, _nY, j, i);
+         }
+      }
+      return this;
+   }
+
+   /**
+    * Traces one pixel ray and writes its resulting color.
+    *
+    * @param nX number of horizontal pixels
+    * @param nY number of vertical pixels
+    * @param j  column index
+    * @param i  row index
+    */
+   private void castRay(int nX, int nY, int j, int i) {
+      Ray ray = constructRay(j, i);
+      _imageWriter.writePixel(j, i, _rayTracer.traceRay(ray));
+   }
+
+   /**
+    * Draws a grid over the image at the given interval and color.
+    *
+    * @param interval grid line spacing in pixels
+    * @param color    grid line color
+    * @return this camera for method chaining
+    */
+   public Camera printGrid(int interval, Color color) {
+      if (_imageWriter == null)
+         throw new IllegalStateException("Image writer is not initialized");
+      if (interval <= 0)
+         throw new IllegalArgumentException("Grid interval must be positive");
+
+      for (int i = 0; i < _nY; i++) {
+         for (int j = 0; j < _nX; j++) {
+            if (j % interval == 0 || i % interval == 0)
+               _imageWriter.writePixel(j, i, color);
+         }
+      }
+      return this;
+   }
+
+   /**
+    * Writes the rendered image to disk.
+    *
+    * @param fileName output file name without extension
+    */
+   public void writeToImage(String fileName) {
+      if (_imageWriter == null)
+         throw new IllegalStateException("Image writer is not initialized");
+      _imageWriter.writeToImage(fileName);
    }
 
    /**
@@ -195,6 +268,31 @@ public class Camera implements Cloneable {
       }
 
       /**
+       * Sets the camera ray tracer directly.
+       *
+       * @param rayTracer ray tracer instance
+       * @return this builder
+       */
+      public Builder setRayTracer(RayTracerBase rayTracer) {
+         _camera._rayTracer = rayTracer;
+         return this;
+      }
+
+      /**
+       * Sets the camera ray tracer by tracer type.
+       *
+       * @param scene         scene to be rendered
+       * @param rayTracerType desired ray tracer type
+       * @return this builder
+       */
+      public Builder setRayTracer(Scene scene, RayTracerType rayTracerType) {
+         if (rayTracerType == RayTracerType.SIMPLE) {
+            return setRayTracer(new SimpleRayTracer(scene));
+         }
+         throw new IllegalArgumentException("Unsupported ray tracer type: " + rayTracerType);
+      }
+
+      /**
        * Validates all camera data, computes the derived camera basis and
        * view-plane helper fields, and returns a copy of the configured camera.
        *
@@ -204,9 +302,11 @@ public class Camera implements Cloneable {
          checkResolution();
          checkLocationAndDirection();
          checkViewPlane();
+         if (_camera._rayTracer == null)
+            setRayTracer(new Scene("test"), RayTracerType.SIMPLE);
          try {
             return (Camera) _camera.clone();
-         } catch (CloneNotSupportedException _) {
+         } catch (CloneNotSupportedException e) {
             return null;
          }
       }
@@ -217,6 +317,8 @@ public class Camera implements Cloneable {
       private void checkResolution() {
          if (_camera._nX <= 0 || _camera._nY <= 0)
             throw new IllegalArgumentException("Resolution values must be positive");
+
+         _camera._imageWriter = new ImageWriter(_camera._nX, _camera._nY);
       }
 
       /**

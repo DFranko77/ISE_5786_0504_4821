@@ -2,6 +2,8 @@ package primitives;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -95,6 +97,46 @@ class RayTests {
                     // TC BV01: Request the point at zero distance from the ray origin. The origin itself should be returned.
                     assertEquals(P1, ray.getPoint(0),
                             "getPoint with t = 0 should return the ray origin");
+                });
+    }
+
+    /**
+     * Tests {@link Ray#findClosestPoint(List)}.
+     */
+    @Test
+    void testFindClosestPoint() {
+        final int epTestCases = 1;
+        final int bvTestCases = 3;
+
+        Ray ray = new Ray(Point.ZERO, Vector.AXIS_X);
+
+        // ============ EP: Equivalence Partitions Tests ============
+        assertAll("EP (" + epTestCases + " cases)",
+                () -> {
+                    // TC EP01: A list with at least three points where the middle point is closest to the ray head.
+                    List<Point> points = List.of(new Point(5, 0, 0), new Point(1, 0, 0), new Point(7, 0, 0));
+                    assertEquals(new Point(1, 0, 0), ray.findClosestPoint(points),
+                            "findClosestPoint should return the middle list point when it is the closest to the ray head");
+                });
+
+        // ============ BVA: Boundary Value Analysis Tests ============
+        assertAll("BVA (" + bvTestCases + " cases)",
+                () -> {
+                    // TC BV01: Null list should return null.
+                    assertNull(ray.findClosestPoint(null),
+                            "findClosestPoint should return null for a null list");
+                },
+                () -> {
+                    // TC BV02: A list with at least three points where the first point is closest to the ray head.
+                    List<Point> points = List.of(new Point(1, 0, 0), new Point(5, 0, 0), new Point(7, 0, 0));
+                    assertEquals(new Point(1, 0, 0), ray.findClosestPoint(points),
+                            "findClosestPoint should return the first list point when it is the closest to the ray head");
+                },
+                () -> {
+                    // TC BV03: A list with at least three points where the last point is closest to the ray head.
+                    List<Point> points = List.of(new Point(5, 0, 0), new Point(7, 0, 0), new Point(1, 0, 0));
+                    assertEquals(new Point(1, 0, 0), ray.findClosestPoint(points),
+                            "findClosestPoint should return the last list point when it is the closest to the ray head");
                 });
     }
 }
