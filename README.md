@@ -11,6 +11,7 @@ This project implements:
 3. **Geometry implementations**: `Plane`, `Sphere`, `Triangle`, `Polygon`, `Tube`, `Cylinder`
 4. **Composite geometry**: `Geometries` (collection of intersectables)
 5. **Renderer**: `Camera` with a nested `Builder`
+6. **Scene loading**: XML/JSON parsing into `Scene` via `scene.io.SceneLoader`
 
 Core capabilities currently include:
 
@@ -21,6 +22,7 @@ Core capabilities currently include:
 5. Camera construction through a builder-based API
 6. Ray generation through the camera view plane
 7. Integration coverage between camera rays and geometric intersections
+8. External scene loading from XML/JSON files under `src\`
 
 ## Project Structure
 
@@ -31,6 +33,8 @@ src/
     impl/
   primitives/
   renderer/
+  scene/
+    io/
   test/
 unitTests/
   geometries/
@@ -79,6 +83,7 @@ The module file `ISE_5786_0504_4821.iml` is configured with:
 1. This repository currently uses IntelliJ module configuration instead of Maven/Gradle.
 2. API documentation (Javadoc) is present across the main geometry, primitives, and camera code and can be extended as features are added.
 3. The camera currently supports builder-based setup for location, orientation, view-plane dimensions, view-plane distance, resolution, and ray construction per pixel.
+4. Scene loading entry points are `SceneLoader.loadFromXml(...)`, `SceneLoader.loadFromJson(...)`, and `SceneLoader.load(...)`.
 
 ## Maintenance
 

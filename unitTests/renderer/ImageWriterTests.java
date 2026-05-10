@@ -17,14 +17,14 @@ class ImageWriterTests {
    /** Grid cell size in pixels. */
    private static final int    GRID_INTERVAL    = 50;
    /** High-contrast background color. */
-   private static final Color  BACKGROUND_COLOR = new Color(java.awt.Color.RED);
+   private static final Color  BACKGROUND_COLOR = new Color(java.awt.Color.YELLOW);
    /** High-contrast grid color. */
-   private static final Color  GRID_COLOR       = new Color(java.awt.Color.YELLOW);
+   private static final Color  GRID_COLOR       = new Color(java.awt.Color.RED);
    /** Output file name (without extension). */
    private static final String OUTPUT_NAME      = "image-writer-grid-test";
 
    /**
-	* Creates a basic two-color image: yellow grid over red background.
+	* Creates a basic two-color image: red grid over yellow background.
 	*/
    @Test
    void testImageWriter() {

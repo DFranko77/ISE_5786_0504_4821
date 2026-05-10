@@ -10,6 +10,7 @@ import lighting.AmbientLight;
 import primitives.Color;
 import primitives.Point;
 import scene.Scene;
+import scene.io.SceneLoader;
 
 /**
  * End-to-end rendering tests.
@@ -20,7 +21,7 @@ import scene.Scene;
  * The first test produces a simple scene intended as a reference image
  * for validating Camera and Renderer implementations.
  */
-@SuppressWarnings("java:S109")
+
 class RenderTests {
    /** Default constructor to satisfy JavaDoc generator */
    RenderTests() { /* to satisfy JavaDoc generator */ }
@@ -107,11 +108,7 @@ class RenderTests {
     * @return         the camera after rendering
     */
    Camera renderSceneXML(Camera.Builder builder, String xmlName) {
-      Scene scene = new Scene("Using XML");
-      // Parse from XML file into scene object instead of the new Scene above,
-      // Use the code you added in appropriate packages.
-      // ...
-      // NB: unit tests is not the correct place to put XML parsing code.
+      Scene scene = SceneLoader.loadFromXml(xmlName);
 
       return builder //
          .setRayTracer(scene, RayTracerType.SIMPLE) //
@@ -128,11 +125,7 @@ class RenderTests {
     * @return          the camera after rendering
     */
    static Camera renderSceneJSON(Camera.Builder builder, String jsonName) {
-      Scene scene = new Scene("Using JSON");
-      // Parse from JSON file into scene object instead of the new Scene above,
-      // Use the code you added in appropriate packages.
-      // ...
-      // NB: unit tests is not the correct place to put JSON parsing code.
+      Scene scene = SceneLoader.loadFromJson(jsonName);
 
       return builder //
          .setRayTracer(scene, RayTracerType.SIMPLE) //
