@@ -69,6 +69,27 @@ public class XmlSceneParser implements SceneParser {
          Node node = element.getAttributes().item(i);
          attributes.put(node.getNodeName(), node.getNodeValue());
       }
+
+      // Parse optional nested appearance nodes such as <emission .../> and <material .../>.
+      NodeList children = element.getChildNodes();
+      for (int i = 0; i < children.getLength(); i++) {
+         Node node = children.item(i);
+         if (node.getNodeType() != Node.ELEMENT_NODE) continue;
+
+         Element child = (Element) node;
+         String key = child.getTagName();
+         Map<String, Object> childAttrs = new HashMap<>();
+         for (int j = 0; j < child.getAttributes().getLength(); j++) {
+            Node attr = child.getAttributes().item(j);
+            childAttrs.put(attr.getNodeName(), attr.getNodeValue());
+         }
+
+         if (childAttrs.size() == 1 && childAttrs.containsKey("value")) {
+            attributes.put(key, childAttrs.get("value"));
+         } else if (!childAttrs.isEmpty()) {
+            attributes.put(key, childAttrs);
+         }
+      }
       return attributes;
    }
 }

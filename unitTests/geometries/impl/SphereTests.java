@@ -170,4 +170,22 @@ class SphereTests {
                             "Orthogonal ray starting inside the sphere should return one exit point");
                 });
     }
+
+    /**
+     * Tests {@link Sphere#calcIntersections(Ray)} geometry binding.
+     */
+    @Test
+    void testCalcIntersections() {
+        Sphere sphere = new Sphere(P1, R1);
+        Ray ray = new Ray(new Point(0, 1.5, 1), V1);
+
+        var intersections = sphere.calcIntersections(ray);
+
+        assertNotNull(intersections, "Expected full intersection details");
+        assertEquals(2, intersections.size(), "Expected two sphere intersections");
+        assertSame(sphere, intersections.get(0).geometry,
+                "calcIntersections must return the exact sphere instance in each hit");
+        assertSame(sphere, intersections.get(1).geometry,
+                "calcIntersections must return the exact sphere instance in each hit");
+    }
 }

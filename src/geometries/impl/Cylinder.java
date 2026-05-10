@@ -60,13 +60,13 @@ public class Cylinder extends Tube {
     }
 
     @Override
-    public List<Point> findIntersections(Ray ray) {
-        List<Point> intersections = new ArrayList<>(4);
+    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
+        List<Intersection> intersections = new ArrayList<>(4);
 
-        List<Point> sideIntersections = super.findIntersections(ray);
+        List<Intersection> sideIntersections = super.calcIntersectionsHelper(ray);
         if (sideIntersections != null) {
-            for (Point intersection : sideIntersections) {
-                if (isOnFiniteCylinderShell(intersection)) {
+            for (Intersection intersection : sideIntersections) {
+                if (isOnFiniteCylinderShell(intersection.point)) {
                     addIntersection(intersections, intersection);
                 }
             }
@@ -74,19 +74,19 @@ public class Cylinder extends Tube {
 
         Point bottomBaseIntersection = findBaseIntersection(ray, _axis.origin());
         if (bottomBaseIntersection != null) {
-            addIntersection(intersections, bottomBaseIntersection);
+            addIntersection(intersections, new Intersection(this, bottomBaseIntersection));
         }
 
         Point topBaseIntersection = findBaseIntersection(ray, _topCenter);
         if (topBaseIntersection != null) {
-            addIntersection(intersections, topBaseIntersection);
+            addIntersection(intersections, new Intersection(this, topBaseIntersection));
         }
 
         if (intersections.isEmpty()) {
             return null;
         }
 
-        intersections.sort(Comparator.comparingDouble(ray.origin()::distanceSquared));
+        intersections.sort(Comparator.comparingDouble(i -> ray.origin().distanceSquared(i.point)));
         return intersections;
     }
 
@@ -136,14 +136,14 @@ public class Cylinder extends Tube {
      * Adds a new intersection point unless an equal point is already present.
      *
      * @param intersections target list
-     * @param point         candidate intersection point
+     * @param intersection  candidate intersection
      */
-    private void addIntersection(List<Point> intersections, Point point) {
-        for (Point existing : intersections) {
-            if (existing.equals(point)) {
+    private void addIntersection(List<Intersection> intersections, Intersection intersection) {
+        for (Intersection existing : intersections) {
+            if (existing.equals(intersection)) {
                 return;
             }
         }
-        intersections.add(point);
+        intersections.add(intersection);
     }
 }

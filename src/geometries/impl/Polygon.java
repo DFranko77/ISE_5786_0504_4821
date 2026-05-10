@@ -97,7 +97,7 @@ public class Polygon extends Geometry {
     *         otherwise {@code null}
     */
    @Override
-   public List<Point> findIntersections(Ray ray) {
+   protected List<Intersection> calcIntersectionsHelper(Ray ray) {
       // 1. Find intersection with the plane
       List<Point> intersections = _plane.findIntersections(ray);
       if (intersections == null) return null;
@@ -132,6 +132,6 @@ public class Polygon extends Geometry {
          return null;
       }
 
-      return intersections;
+      return List.of(new Intersection(this, intersections.get(0)));
    }
 }

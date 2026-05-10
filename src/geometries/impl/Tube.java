@@ -48,7 +48,7 @@ public class Tube extends RadialGeometry {
     }
 
     @Override
-    public List<Point> findIntersections(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
         Point p0 = ray.origin();
         Vector v = ray.direction();
         Point axisOrigin = _axis.origin();
@@ -88,13 +88,15 @@ public class Tube extends RadialGeometry {
         if (t1 > 0 && t2 > 0) {
             Point p1 = ray.getPoint(t1);
             Point p2 = ray.getPoint(t2);
-            return t1 < t2 ? List.of(p1, p2) : List.of(p2, p1);
+            return t1 < t2
+                ? List.of(new Intersection(this, p1), new Intersection(this, p2))
+                : List.of(new Intersection(this, p2), new Intersection(this, p1));
         }
 
         return t1 > 0
-                ? List.of(ray.getPoint(t1))
+                ? List.of(new Intersection(this, ray.getPoint(t1)))
                 : t2 > 0
-                ? List.of(ray.getPoint(t2))
+                ? List.of(new Intersection(this, ray.getPoint(t2)))
                 : null;
     }
 }

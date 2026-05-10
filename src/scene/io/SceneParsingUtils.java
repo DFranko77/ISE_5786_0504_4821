@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import geometries.api.Geometry;
 import geometries.api.Intersectable;
 import geometries.impl.Cylinder;
 import geometries.impl.Plane;
@@ -14,6 +15,8 @@ import geometries.impl.Triangle;
 import geometries.impl.Tube;
 import lighting.AmbientLight;
 import primitives.Color;
+import primitives.Double3;
+import primitives.Material;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
@@ -35,6 +38,10 @@ final class SceneParsingUtils {
       }
       if (value instanceof Map<?, ?> map) {
          Map<String, Object> normalized = normalizeMap(map, "color");
+         Object wrapped = firstNonNull(firstNonNull(normalized.get("color"), normalized.get("intensity")), normalized.get("value"));
+         if (wrapped != null) {
+            return toColor(wrapped);
+         }
          return new Color(
             toDouble(normalized.get("r"), "color.r"),
             toDouble(normalized.get("g"), "color.g"),
@@ -103,7 +110,7 @@ final class SceneParsingUtils {
    static Intersectable geometryFromMap(String geometryType, Map<String, Object> rawProps) {
       String type = geometryType.trim().toLowerCase();
       Map<String, Object> props = normalizeMap(rawProps, type);
-      return switch (type) {
+      Geometry geometry = switch (type) {
          case "sphere" -> new Sphere(toPoint(require(props, "center", type), type + ".center"), toDouble(require(props, "radius", type), type + ".radius"));
          case "triangle" -> new Triangle(
             toPoint(require(props, "p0", type), type + ".p0"),
@@ -120,6 +127,55 @@ final class SceneParsingUtils {
          );
          default -> throw new IllegalArgumentException("Unsupported geometry type: " + geometryType);
       };
+
+      applyGeometryAppearance(geometry, props);
+      return geometry;
+   }
+
+   static Double3 toDouble3(Object value, String label) {
+      if (value instanceof Number n) return new Double3(n.doubleValue());
+      if (value instanceof String s) {
+         String[] parts = s.trim().split("\\s+");
+         if (parts.length == 1) {
+            return new Double3(Double.parseDouble(parts[0]));
+         }
+         double[] triad = parseDoubleArray(s, 3, label);
+         return new Double3(triad[0], triad[1], triad[2]);
+      }
+      if (value instanceof List<?> list) {
+         if (list.size() == 1) {
+            return new Double3(toDouble(list.get(0), label + "[0]"));
+         }
+         if (list.size() == 3) {
+            return new Double3(
+               toDouble(list.get(0), label + "[0]"),
+               toDouble(list.get(1), label + "[1]"),
+               toDouble(list.get(2), label + "[2]")
+            );
+         }
+      }
+      if (value instanceof Map<?, ?> map) {
+         Map<String, Object> normalized = normalizeMap(map, label);
+         if (normalized.containsKey("x") || normalized.containsKey("y") || normalized.containsKey("z")) {
+            return new Double3(
+               toDouble(require(normalized, "x", label), label + ".x"),
+               toDouble(require(normalized, "y", label), label + ".y"),
+               toDouble(require(normalized, "z", label), label + ".z")
+            );
+         }
+         if (normalized.containsKey("r") || normalized.containsKey("g") || normalized.containsKey("b")) {
+            return new Double3(
+               toDouble(require(normalized, "r", label), label + ".r"),
+               toDouble(require(normalized, "g", label), label + ".g"),
+               toDouble(require(normalized, "b", label), label + ".b")
+            );
+         }
+         if (normalized.containsKey("value")) {
+            return new Double3(toDouble(normalized.get("value"), label + ".value"));
+         }
+      }
+
+      throw new IllegalArgumentException("Unsupported Double3 value for " + label + ": " + value);
    }
 
    static double toDouble(Object value, String label) {
@@ -147,6 +203,38 @@ final class SceneParsingUtils {
 
    static Object firstNonNull(Object first, Object second) {
       return first != null ? first : second;
+   }
+
+   private static void applyGeometryAppearance(Geometry geometry, Map<String, Object> props) {
+      Object emission = firstNonNull(
+         firstNonNull(props.get("emission"), props.get("emission-color")),
+         props.get("emissionColor")
+      );
+      if (emission != null) {
+         geometry.setEmission(toColor(emission));
+      }
+
+      Material material = new Material();
+      boolean hasMaterial = false;
+
+      Object kA = firstNonNull(props.get("kA"), props.get("ka"));
+      if (kA == null) kA = firstNonNull(props.get("k-a"), props.get("k_a"));
+
+      Object materialObj = props.get("material");
+      if (kA == null && materialObj instanceof Map<?, ?> map) {
+         Map<String, Object> materialMap = normalizeMap(map, "material");
+         kA = firstNonNull(materialMap.get("kA"), materialMap.get("ka"));
+         if (kA == null) kA = firstNonNull(materialMap.get("k-a"), materialMap.get("k_a"));
+      }
+
+      if (kA != null) {
+         material.setKA(toDouble3(kA, "material.kA"));
+         hasMaterial = true;
+      }
+
+      if (hasMaterial) {
+         geometry.setMaterial(material);
+      }
    }
 
    private static Plane createPlane(Map<String, Object> props, String type) {

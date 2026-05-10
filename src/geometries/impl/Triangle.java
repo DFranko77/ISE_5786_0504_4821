@@ -51,7 +51,7 @@ public class Triangle extends Polygon {
      * @return a list containing the intersection point if one exists, null otherwise
      */
     @Override
-    public List<Point> findIntersections(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
         Point p0 = ray.origin();
         Vector v = ray.direction();
 
@@ -98,6 +98,6 @@ public class Triangle extends Polygon {
         // Check if intersection is behind the ray origin (t <= 0)
         if (t <= 0) return null;
 
-        return List.of(ray.getPoint(t));
+        return List.of(new Intersection(this, ray.getPoint(t)));
     }
 }
