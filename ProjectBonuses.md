@@ -27,3 +27,20 @@
 
 5. **Cylinder intersection tests**
    Added dedicated `Cylinder` intersection tests covering cap-only cases, shell-only cases, mixed shell-and-cap cases, seam hits, tangent cases, axis-parallel rays, orthogonal rays, and angled rays.
+
+## Stage 6
+
+1. **Ambient light infrastructure**
+   Added an `AmbientLight` type, scene-level ambient light support, and simple-ray-tracer integration so rendered colors can include a global ambient contribution.
+
+2. **Material-based ambient attenuation**
+   Added `Material.kA` with both scalar and `Double3` setters, so each geometry can attenuate ambient light differently, including per-channel ambient response.
+
+3. **Geometry-aware intersection API**
+   Added the `Intersectable.Intersection` hit structure and the `calcIntersections(Ray)` / `calcIntersectionsHelper(Ray)` flow, so the renderer can keep both the hit point and the intersected geometry/material together.
+
+4. **Ambient and emission render tests**
+   Added Stage 6 rendering tests for emission colors and ambient-light attenuation, including the Part II setup where different bodies use different `kA` values through their materials.
+
+5. **External scene loading from XML/JSON**
+   Added `SceneLoader` with XML and JSON parsers, shared scene-parsing utilities, sample scene files under `src\`, and focused tests that validate loaded background, ambient light, and geometry intersections.

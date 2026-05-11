@@ -11,6 +11,7 @@ import geometries.impl.Sphere;
 import geometries.impl.Triangle;
 import lighting.AmbientLight;
 import primitives.Color;
+import primitives.Double3;
 import primitives.Material;
 import primitives.Point;
 import primitives.Vector;
@@ -121,11 +122,11 @@ class RenderStage6Tests {
    void testRenderAmbientColor() {
       Scene scene = new Scene("Ambient colors").setAmbientLight(new AmbientLight(new Color(WHITE)));
       scene.geometries //
-         .add(_sphere.setMaterial(new Material().setKA(0.5)),
-              _triangleLeftTop.setEmission(new Color(GREEN)).setMaterial(new Material().setKA(0.2)),
-              _triangleLeftBottom.setEmission(new Color(RED)).setMaterial(new Material().setKA(0.6)),
-              _triangleRightBottom.setEmission(new Color(BLUE)).setMaterial(new Material().setKA(1.0))
-         );
+         .add(_sphere.setMaterial(new Material().setKA(new Double3(0.4))),
+              _triangleLeftTop.setEmission(new Color(GREEN)).setMaterial(new Material().setKA(new Double3(0, 0.8, 0))),
+              _triangleLeftBottom.setEmission(new Color(RED)).setMaterial(new Material().setKA(new Double3(0.8, 0, 0))),
+              _triangleRightBottom.setEmission(new Color(BLUE)).setMaterial(new Material().setKA(new Double3(0, 0, 0.8)))
+          );
       createImage(scene, "ambient render test");
    }
 }
