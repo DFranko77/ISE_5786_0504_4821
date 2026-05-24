@@ -2,7 +2,11 @@ package scene;
 
 import geometries.impl.Geometries;
 import lighting.AmbientLight;
+import lighting.LightSource;
 import primitives.Color;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Plain data structure describing a render scene.
@@ -19,6 +23,9 @@ public class Scene {
 
    /** Collection of scene geometries. */
    public Geometries      geometries   = new Geometries();
+
+   /** External light sources in the scene. */
+   public List<LightSource> lights     = new ArrayList<>();
 
    /**
 	* Creates a scene with the given name.

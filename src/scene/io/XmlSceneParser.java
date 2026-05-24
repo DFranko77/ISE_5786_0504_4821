@@ -56,6 +56,21 @@ public class XmlSceneParser implements SceneParser {
             }
          }
 
+          NodeList lightsNodes = sceneElement.getElementsByTagName("lights");
+          if (lightsNodes.getLength() > 0) {
+             Element lightsElement = (Element) lightsNodes.item(0);
+             NodeList children = lightsElement.getChildNodes();
+             for (int i = 0; i < children.getLength(); i++) {
+                Node node = children.item(i);
+                if (node.getNodeType() != Node.ELEMENT_NODE) continue;
+
+                Element lightElement = (Element) node;
+                String type = lightElement.getTagName();
+                Map<String, Object> props = attributesToMap(lightElement);
+                scene.lights.add(SceneParsingUtils.lightFromMap(type, props));
+             }
+          }
+
          scene.setGeometries(geometries);
          return scene;
       } catch (Exception ex) {

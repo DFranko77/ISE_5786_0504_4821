@@ -1,0 +1,24 @@
+{
+  "scene": {
+    "geometries": [
+      {
+        "type": "sphere",
+        "center": "0 0 -50",
+        "radius": 50,
+        "emission": "0 0 127",
+        "material": {
+          "kD": 0.5,
+          "kS": 0.5,
+          "shininess": 301
+        }
+      }
+    ],
+    "lights": [
+      {
+        "type": "directional-light",
+        "color": "800 500 0",
+        "direction": "1 1 -0.5"
+      }
+    ]
+  }
+}

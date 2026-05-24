@@ -50,6 +50,11 @@ public class JsonSceneParser implements SceneParser {
             parseGeometries(geometriesNode, geometries);
          }
 
+         Object lightsNode = firstNonNull(sceneMap.get("lights"), sceneMap.get("light-sources"));
+         if (lightsNode != null) {
+            parseLights(lightsNode, scene);
+         }
+
          scene.setGeometries(geometries);
          return scene;
       } catch (IOException ex) {
@@ -115,6 +120,66 @@ public class JsonSceneParser implements SceneParser {
       }
 
       throw new IllegalArgumentException("Unsupported geometry value for type " + type + ": " + value);
+   }
+
+   private static void parseLights(Object lightsNode, Scene scene) {
+      if (lightsNode instanceof List<?> list) {
+         for (Object item : list) {
+            addLightFromItem(item, scene);
+         }
+         return;
+      }
+
+      if (lightsNode instanceof Map<?, ?> mapRaw) {
+         Map<String, Object> map = SceneParsingUtils.normalizeMap(mapRaw, "lights");
+         for (Map.Entry<String, Object> entry : map.entrySet()) {
+            addLightByType(entry.getKey(), entry.getValue(), scene);
+         }
+         return;
+      }
+
+      throw new IllegalArgumentException("Unsupported lights JSON node: " + lightsNode);
+   }
+
+   private static void addLightFromItem(Object item, Scene scene) {
+      if (!(item instanceof Map<?, ?> mapRaw)) {
+         throw new IllegalArgumentException("Light item must be object: " + item);
+      }
+
+      Map<String, Object> map = SceneParsingUtils.normalizeMap(mapRaw, "light-item");
+      if (map.containsKey("type")) {
+         String type = String.valueOf(map.get("type"));
+         Map<String, Object> props = new LinkedHashMap<>(map);
+         props.remove("type");
+         scene.lights.add(SceneParsingUtils.lightFromMap(type, props));
+         return;
+      }
+
+      if (map.size() != 1) {
+         throw new IllegalArgumentException("Light item must define either 'type' or single-type object");
+      }
+
+      Map.Entry<String, Object> entry = map.entrySet().iterator().next();
+      addLightByType(entry.getKey(), entry.getValue(), scene);
+   }
+
+   private static void addLightByType(String type, Object value, Scene scene) {
+      if (value instanceof List<?> list) {
+         for (Object item : list) {
+            if (!(item instanceof Map<?, ?> mapRaw)) {
+               throw new IllegalArgumentException("Expected object light in list for type " + type);
+            }
+            scene.lights.add(SceneParsingUtils.lightFromMap(type, SceneParsingUtils.normalizeMap(mapRaw, type)));
+         }
+         return;
+      }
+
+      if (value instanceof Map<?, ?> mapRaw) {
+         scene.lights.add(SceneParsingUtils.lightFromMap(type, SceneParsingUtils.normalizeMap(mapRaw, type)));
+         return;
+      }
+
+      throw new IllegalArgumentException("Unsupported light value for type " + type + ": " + value);
    }
 
    private static Object firstNonNull(Object first, Object second) {

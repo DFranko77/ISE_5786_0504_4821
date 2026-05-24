@@ -44,3 +44,8 @@
 
 5. **External scene loading from XML/JSON**
    Added `SceneLoader` with XML and JSON parsers, shared scene-parsing utilities, sample scene files under `src\`, and focused tests that validate loaded background, ambient light, and geometry intersections.
+
+## Stage 7
+
+1. **Narrow-beam spotlight (1 pt)**
+   Added `SpotLight.setNarrowBeam(...)` with exponent-based focus (`(dir dot L)^n`) to support flashlight/projector behavior, and enabled the enhanced-spot render tests for sphere and triangles (`testSphereSpotSharp`, `testTrianglesSpotSharp`).

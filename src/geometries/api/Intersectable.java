@@ -1,8 +1,10 @@
 package geometries.api;
 
+import lighting.LightSource;
+import primitives.Material;
 import primitives.Point;
 import primitives.Ray;
-import primitives.Material;
+import primitives.Vector;
 
 import java.util.List;
 
@@ -20,6 +22,20 @@ public abstract class  Intersectable {
         public final Point point;
         /** Material of the intersected geometry (or default material for null geometry). */
         public final Material material;
+
+        /** Normal vector at the intersection point (cached during shading). */
+        public Vector normal;
+        /** View direction vector (ray direction) used during shading. */
+        public Vector v;
+        /** Cached dot product v dot normal. */
+        public double vNormal;
+
+        /** Light source currently evaluated during shading. */
+        public LightSource light;
+        /** Direction vector from light to intersection point. */
+        public Vector l;
+        /** Cached dot product l dot normal. */
+        public double lNormal;
 
         /**
          * Creates an intersection pair of geometry and point.

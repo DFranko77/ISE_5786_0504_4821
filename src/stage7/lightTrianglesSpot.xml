@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scene>
+  <ambient-light color="38 38 38" />
+  <geometries>
+    <triangle p0="-110 -110 -150" p1="95 100 -150" p2="110 -110 -150">
+      <material kD="0.2 0.6 0.4" kS="0.2 0.4 0.3" shininess="301" />
+    </triangle>
+    <triangle p0="-110 -110 -150" p1="95 100 -150" p2="-75 78 100">
+      <material kD="0.2 0.6 0.4" kS="0.2 0.4 0.3" shininess="301" />
+    </triangle>
+  </geometries>
+  <lights>
+    <spot-light color="800 500 250" position="30 10 -100" direction="-2 -2 -2" kL="0.001" kQ="0.0001" />
+  </lights>
+</scene>

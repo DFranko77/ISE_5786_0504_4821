@@ -14,6 +14,10 @@ import geometries.impl.Sphere;
 import geometries.impl.Triangle;
 import geometries.impl.Tube;
 import lighting.AmbientLight;
+import lighting.DirectionalLight;
+import lighting.LightSource;
+import lighting.PointLight;
+import lighting.SpotLight;
 import primitives.Color;
 import primitives.Double3;
 import primitives.Material;
@@ -132,6 +136,57 @@ final class SceneParsingUtils {
       return geometry;
    }
 
+   static LightSource lightFromMap(String lightType, Map<String, Object> rawProps) {
+      String type = lightType.trim().toLowerCase();
+      Map<String, Object> props = normalizeMap(rawProps, type + "-light");
+
+      Object colorObj = firstNonNull(firstNonNull(props.get("color"), props.get("intensity")), props.get("value"));
+      Color intensity = colorObj == null ? Color.BLACK : toColor(colorObj);
+
+      return switch (type) {
+         case "directional", "directional-light" -> {
+            Object direction = firstNonNull(props.get("direction"), props.get("dir"));
+            if (direction == null) {
+               throw new IllegalArgumentException("Missing direction for directional light");
+            }
+            yield new DirectionalLight(intensity, toVector(direction, type + ".direction"));
+         }
+         case "point", "point-light" -> {
+            Object position = firstNonNull(firstNonNull(props.get("position"), props.get("point")), props.get("p"));
+            if (position == null) {
+               throw new IllegalArgumentException("Missing position for point light");
+            }
+            PointLight light = new PointLight(intensity, toPoint(position, type + ".position"));
+            applyPointLightCoefficients(light, props, type);
+            yield light;
+         }
+         case "spot", "spot-light", "spotlight" -> {
+            Object position = firstNonNull(firstNonNull(props.get("position"), props.get("point")), props.get("p"));
+            Object direction = firstNonNull(props.get("direction"), props.get("dir"));
+            if (position == null || direction == null) {
+               throw new IllegalArgumentException("Missing position/direction for spot light");
+            }
+
+            SpotLight light = new SpotLight(
+               intensity,
+               toPoint(position, type + ".position"),
+               toVector(direction, type + ".direction")
+            );
+            applyPointLightCoefficients(light, props, type);
+
+            Object narrowBeam = firstNonNull(
+               firstNonNull(firstNonNull(props.get("narrowBeam"), props.get("narrow-beam")), props.get("narrow_beam")),
+               props.get("beam")
+            );
+            if (narrowBeam != null) {
+               light.setNarrowBeam(toDouble(narrowBeam, type + ".narrowBeam"));
+            }
+            yield light;
+         }
+         default -> throw new IllegalArgumentException("Unsupported light type: " + lightType);
+      };
+   }
+
    static Double3 toDouble3(Object value, String label) {
       if (value instanceof Number n) return new Double3(n.doubleValue());
       if (value instanceof String s) {
@@ -217,24 +272,56 @@ final class SceneParsingUtils {
       Material material = new Material();
       boolean hasMaterial = false;
 
-      Object kA = firstNonNull(props.get("kA"), props.get("ka"));
-      if (kA == null) kA = firstNonNull(props.get("k-a"), props.get("k_a"));
-
       Object materialObj = props.get("material");
-      if (kA == null && materialObj instanceof Map<?, ?> map) {
-         Map<String, Object> materialMap = normalizeMap(map, "material");
-         kA = firstNonNull(materialMap.get("kA"), materialMap.get("ka"));
-         if (kA == null) kA = firstNonNull(materialMap.get("k-a"), materialMap.get("k_a"));
-      }
+      Map<String, Object> materialMap = materialObj instanceof Map<?, ?> map ? normalizeMap(map, "material") : Map.of();
+
+      Object kA = firstNonNull(findFirst(props, "kA", "ka", "k-a", "k_a"), findFirst(materialMap, "kA", "ka", "k-a", "k_a"));
+      Object kD = firstNonNull(findFirst(props, "kD", "kd", "k-d", "k_d"), findFirst(materialMap, "kD", "kd", "k-d", "k_d"));
+      Object kS = firstNonNull(findFirst(props, "kS", "ks", "k-s", "k_s"), findFirst(materialMap, "kS", "ks", "k-s", "k_s"));
+      Object shininess = firstNonNull(
+         findFirst(props, "nShininess", "n-shininess", "n_shininess", "shininess", "n"),
+         findFirst(materialMap, "nShininess", "n-shininess", "n_shininess", "shininess", "n")
+      );
 
       if (kA != null) {
          material.setKA(toDouble3(kA, "material.kA"));
+         hasMaterial = true;
+      }
+      if (kD != null) {
+         material.setKD(toDouble3(kD, "material.kD"));
+         hasMaterial = true;
+      }
+      if (kS != null) {
+         material.setKS(toDouble3(kS, "material.kS"));
+         hasMaterial = true;
+      }
+      if (shininess != null) {
+         material.setShininess((int) Math.round(toDouble(shininess, "material.shininess")));
          hasMaterial = true;
       }
 
       if (hasMaterial) {
          geometry.setMaterial(material);
       }
+   }
+
+   private static Object findFirst(Map<String, Object> map, String... keys) {
+      for (String key : keys) {
+         if (map.containsKey(key)) {
+            return map.get(key);
+         }
+      }
+      return null;
+   }
+
+   private static void applyPointLightCoefficients(PointLight light, Map<String, Object> props, String type) {
+      Object kC = findFirst(props, "kC", "kc", "k-c", "k_c");
+      Object kL = findFirst(props, "kL", "kl", "k-l", "k_l");
+      Object kQ = findFirst(props, "kQ", "kq", "k-q", "k_q");
+
+      if (kC != null) light.setKc(toDouble(kC, type + ".kC"));
+      if (kL != null) light.setKl(toDouble(kL, type + ".kL"));
+      if (kQ != null) light.setKq(toDouble(kQ, type + ".kQ"));
    }
 
    private static Plane createPlane(Map<String, Object> props, String type) {
