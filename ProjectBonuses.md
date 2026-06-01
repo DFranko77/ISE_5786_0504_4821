@@ -49,3 +49,11 @@
 
 1. **Narrow-beam spotlight (1 pt)**
    Added `SpotLight.setNarrowBeam(...)` with exponent-based focus (`(dir dot L)^n`) to support flashlight/projector behavior, and enabled the enhanced-spot render tests for sphere and triangles (`testSphereSpotSharp`, `testTrianglesSpotSharp`).
+
+## Stage 8
+
+1. **Optimized shadow ray distance filtering (1 pt)**
+   Instead of computing all intersections and filtering afterward, added a `maxDistance` parameter throughout the intersection API:
+   - `Intersectable`: added `calcIntersections(Ray, double maxDistance)` public overload and replaced the single abstract `calcIntersectionsHelper(Ray)` with `calcIntersectionsHelper(Ray, double maxDistance)`.
+   - All geometries (`Sphere`, `Plane`, `Triangle`, `Polygon`, `Tube`, `Cylinder`, `Geometries`): each `t` value is now guarded by `alignZero(t - maxDistance) <= 0` before being added to results.
+   - Shadow rays in `transparency(...)` call `calcIntersections(shadowRay, lightDistance)` directly, so geometry beyond the light source is never computed.

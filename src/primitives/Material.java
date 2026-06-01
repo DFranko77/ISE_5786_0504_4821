@@ -12,6 +12,10 @@ public class Material {
    public Double3 kS = Double3.ZERO;
    /** Shininess factor for Phong specular reflection. */
    public int nShininess = 0;
+   /** Transparency attenuation factor (0.0 = opaque, 1.0 = fully transparent). */
+   public Double3 kT = Double3.ZERO;
+   /** Reflection attenuation factor (0.0 = no reflection, 1.0 = perfect mirror). */
+   public Double3 kR = Double3.ZERO;
 
    /**
     * Sets the ambient attenuation coefficient.
@@ -87,6 +91,50 @@ public class Material {
     */
    public Material setShininess(int nShininess) {
       this.nShininess = nShininess;
+      return this;
+   }
+
+   /**
+    * Sets the transparency attenuation coefficient.
+    *
+    * @param kT transparency coefficient per channel
+    * @return this material for chaining
+    */
+   public Material setKT(Double3 kT) {
+      this.kT = kT;
+      return this;
+   }
+
+   /**
+    * Sets a uniform transparency attenuation coefficient for all channels.
+    *
+    * @param kT transparency coefficient value
+    * @return this material for chaining
+    */
+   public Material setKT(double kT) {
+      this.kT = new Double3(kT);
+      return this;
+   }
+
+   /**
+    * Sets the reflection attenuation coefficient.
+    *
+    * @param kR reflection coefficient per channel
+    * @return this material for chaining
+    */
+   public Material setKR(Double3 kR) {
+      this.kR = kR;
+      return this;
+   }
+
+   /**
+    * Sets a uniform reflection attenuation coefficient for all channels.
+    *
+    * @param kR reflection coefficient value
+    * @return this material for chaining
+    */
+   public Material setKR(double kR) {
+      this.kR = new Double3(kR);
       return this;
    }
 }

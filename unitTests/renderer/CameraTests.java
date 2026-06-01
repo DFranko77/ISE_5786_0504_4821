@@ -272,3 +272,4 @@ class CameraTests {
       assertEquals(new Ray(LOCATION, new Vector(-2, 2, -10)), rayBV06, ERROR_CONSTRUCT_RAY);
    }
 }
+

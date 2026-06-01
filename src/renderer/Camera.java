@@ -188,6 +188,7 @@ public class Camera implements Cloneable {
          return this;
       }
 
+
       /**
        * Sets the camera orientation from explicit forward and up vectors.
        *
@@ -342,7 +343,7 @@ public class Camera implements Cloneable {
          _camera._vTo = direction.normalize();
          _camera._vRight = _camera._vTo.crossProduct(_upHint).normalize();
          _camera._vUp = _camera._vRight.crossProduct(_camera._vTo).normalize();
-      }
+       }
 
       /**
        * Validates the view-plane dimensions and distance, then computes the
