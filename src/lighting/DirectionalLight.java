@@ -23,12 +23,17 @@ public class DirectionalLight extends Light implements LightSource {
    }
 
    @Override
-   public Vector getL(Point p) {
+   public Vector getL(Point ignored) {
       return _direction;
    }
 
    @Override
    public Color getIntensity(Point p) {
       return getIntensity();
+   }
+
+   @Override
+   public double getDistance(Point point) {
+      return Double.POSITIVE_INFINITY;
    }
 }

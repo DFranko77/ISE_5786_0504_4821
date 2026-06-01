@@ -97,10 +97,10 @@ public class Polygon extends Geometry {
     *         otherwise {@code null}
     */
    @Override
-   protected List<Intersection> calcIntersectionsHelper(Ray ray) {
-      // 1. Find intersection with the plane
-      List<Point> intersections = _plane.findIntersections(ray);
-      if (intersections == null) return null;
+   protected List<Intersection> calcIntersectionsHelper(Ray ray, double maxDistance) {
+      // 1. Find intersection with the plane (respecting maxDistance)
+      List<Intersection> planeIntersections = _plane.calcIntersections(ray, maxDistance);
+      if (planeIntersections == null) return null;
 
       Point p0 = ray.origin();
       Vector v = ray.direction();
@@ -132,6 +132,6 @@ public class Polygon extends Geometry {
          return null;
       }
 
-      return List.of(new Intersection(this, intersections.get(0)));
+      return List.of(new Intersection(this, planeIntersections.get(0).point));
    }
 }

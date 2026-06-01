@@ -60,10 +60,10 @@ public class Cylinder extends Tube {
     }
 
     @Override
-    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray, double maxDistance) {
         List<Intersection> intersections = new ArrayList<>(4);
 
-        List<Intersection> sideIntersections = super.calcIntersectionsHelper(ray);
+        List<Intersection> sideIntersections = super.calcIntersectionsHelper(ray, maxDistance);
         if (sideIntersections != null) {
             for (Intersection intersection : sideIntersections) {
                 if (isOnFiniteCylinderShell(intersection.point)) {
@@ -72,12 +72,12 @@ public class Cylinder extends Tube {
             }
         }
 
-        Point bottomBaseIntersection = findBaseIntersection(ray, _axis.origin());
+        Point bottomBaseIntersection = findBaseIntersection(ray, _axis.origin(), maxDistance);
         if (bottomBaseIntersection != null) {
             addIntersection(intersections, new Intersection(this, bottomBaseIntersection));
         }
 
-        Point topBaseIntersection = findBaseIntersection(ray, _topCenter);
+        Point topBaseIntersection = findBaseIntersection(ray, _topCenter, maxDistance);
         if (topBaseIntersection != null) {
             addIntersection(intersections, new Intersection(this, topBaseIntersection));
         }
@@ -108,7 +108,7 @@ public class Cylinder extends Tube {
      * @param baseCenter center of the tested base disk
      * @return the disk intersection point, or {@code null} when no forward hit exists
      */
-    private Point findBaseIntersection(Ray ray, Point baseCenter) {
+    private Point findBaseIntersection(Ray ray, Point baseCenter, double maxDistance) {
         double denominator = alignZero(_axis.direction().dotProduct(ray.direction()));
         if (isZero(denominator)) {
             return null;
@@ -122,7 +122,7 @@ public class Cylinder extends Tube {
         }
 
         double t = alignZero(numerator / denominator);
-        if (t <= 0) {
+        if (t <= 0 || alignZero(t - maxDistance) > 0) {
             return null;
         }
 
