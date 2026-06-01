@@ -51,7 +51,7 @@ public class Triangle extends Polygon {
      * @return a list containing the intersection point if one exists, null otherwise
      */
     @Override
-    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray, double maxDistance) {
         Point p0 = ray.origin();
         Vector v = ray.direction();
 
@@ -95,8 +95,7 @@ public class Triangle extends Polygon {
         // Calculate t - distance from ray origin to intersection point
         double t = alignZero(_edge2.dotProduct(qvec) * invDet);
 
-        // Check if intersection is behind the ray origin (t <= 0)
-        if (t <= 0) return null;
+        if (t <= 0 || alignZero(t - maxDistance) > 0) return null;
 
         return List.of(new Intersection(this, ray.getPoint(t)));
     }

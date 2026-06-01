@@ -84,15 +84,27 @@ public abstract class  Intersectable {
      * @return list of geometry+point intersections, or {@code null}
      */
     public final List<Intersection> calcIntersections(Ray ray) {
-        return calcIntersectionsHelper(ray);
+        return calcIntersectionsHelper(ray, Double.POSITIVE_INFINITY);
+    }
+
+    /**
+     * Public NVI entry-point for full intersection details up to a maximum distance.
+     *
+     * @param ray         ray to test
+     * @param maxDistance maximum allowed intersection distance along the ray
+     * @return list of geometry+point intersections within range, or {@code null}
+     */
+    public final List<Intersection> calcIntersections(Ray ray, double maxDistance) {
+        return calcIntersectionsHelper(ray, maxDistance);
     }
 
     /**
      * Internal intersection calculation hook for NVI-based APIs.
      *
-     * @param ray ray to test
-     * @return list of geometry+point intersections, or {@code null}
+     * @param ray         ray to test
+     * @param maxDistance maximum allowed intersection distance along the ray
+     * @return list of geometry+point intersections within range, or {@code null}
      */
-    protected abstract List<Intersection> calcIntersectionsHelper(Ray ray);
+    protected abstract List<Intersection> calcIntersectionsHelper(Ray ray, double maxDistance);
 
 }

@@ -47,12 +47,15 @@ public class Sphere extends RadialGeometry {
      *         or {@code null} when there are no forward intersections
      */
     @Override
-    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray, double maxDistance) {
         Point p0 = ray.origin();
         Vector v = ray.direction();
 
         if (_center.equals(p0)) {
-            return List.of(new Intersection(this, ray.getPoint(_radius)));
+            double t = _radius;
+            return alignZero(t - maxDistance) <= 0
+                ? List.of(new Intersection(this, ray.getPoint(t)))
+                : null;
         }
 
         Vector u = _center.subtract(p0);
@@ -68,7 +71,10 @@ public class Sphere extends RadialGeometry {
         double t1 = alignZero(tm - th);
         double t2 = alignZero(tm + th);
 
-        if (t1 > 0 && t2 > 0) {
+        boolean t1Valid = t1 > 0 && alignZero(t1 - maxDistance) <= 0;
+        boolean t2Valid = t2 > 0 && alignZero(t2 - maxDistance) <= 0;
+
+        if (t1Valid && t2Valid) {
             Point p1 = ray.getPoint(t1);
             Point p2 = ray.getPoint(t2);
             return t1 < t2
@@ -76,10 +82,10 @@ public class Sphere extends RadialGeometry {
                 : List.of(new Intersection(this, p2), new Intersection(this, p1));
         }
 
-        return t1 > 0
-                ? List.of(new Intersection(this, ray.getPoint(t1)))
-                : t2 > 0
-                ? List.of(new Intersection(this, ray.getPoint(t2)))
-                : null;
+        return t1Valid
+            ? List.of(new Intersection(this, ray.getPoint(t1)))
+            : t2Valid
+            ? List.of(new Intersection(this, ray.getPoint(t2)))
+            : null;
     }
 }

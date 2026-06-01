@@ -33,7 +33,7 @@ class DirectionalLightTests {
       assertAll("EP (" + epTestCases + " cases)",
          () -> {
             // TC EP01: Direction should be normalized and independent of the queried point.
-            Vector l = light.getL(QUERY_POINT);
+            Vector l = light.getL(null);
             assertEquals(EXPECTED_DIRECTION, l,
                "Directional light getL should return the normalized fixed direction");
          }

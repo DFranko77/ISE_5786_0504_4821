@@ -53,7 +53,7 @@ public class Plane extends Geometry {
     }
 
     @Override
-    protected List<Intersection> calcIntersectionsHelper(Ray ray) {
+    protected List<Intersection> calcIntersectionsHelper(Ray ray, double maxDistance) {
         Point p0 = ray.origin();
         if (_point.equals(p0)) {
             return null;
@@ -66,7 +66,7 @@ public class Plane extends Geometry {
         }
 
         double t = alignZero(_normal.dotProduct(_point.subtract(p0)) / nv);
-        if (t <= 0) {
+        if (t <= 0 || alignZero(t - maxDistance) > 0) {
             return null;
         }
 

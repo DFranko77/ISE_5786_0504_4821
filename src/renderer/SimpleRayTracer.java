@@ -3,6 +3,7 @@ package renderer;
 import geometries.api.Intersectable.Intersection;
 import primitives.Color;
 import primitives.Double3;
+import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
 import scene.Scene;
@@ -11,6 +12,8 @@ import scene.Scene;
  * Basic ray tracer that returns scene background or ambient color.
  */
 class SimpleRayTracer extends RayTracerBase {
+   private static final double DELTA = 0.1;
+
    /**
     * Creates a simple ray tracer for the given scene.
     *
@@ -42,12 +45,29 @@ class SimpleRayTracer extends RayTracerBase {
    private Color calcColorLocalEffects(Intersection intersection) {
       Color color = intersection.geometry.getEmission();
       for (var lightSource : _scene.lights) {
-         if (preprocessLightSource(intersection, lightSource)) {
+         if (preprocessLightSource(intersection, lightSource) && unshaded(intersection)) {
             Double3 lightFactor = calcDiffuse(intersection).add(calcSpecular(intersection));
             color = color.add(lightSource.getIntensity(intersection.point).scale(lightFactor));
          }
       }
       return color;
+   }
+
+   /**
+    * Checks whether the intersection point is unshaded for its active light source.
+    *
+    * @param intersection intersection shading context
+    * @return {@code true} if no geometry blocks the path to the light
+    */
+   private boolean unshaded(Intersection intersection) {
+      Vector shift = intersection.normal.scale(intersection.vNormal < 0 ? DELTA : -DELTA);
+      Point shiftedHead = intersection.point.add(shift);
+      Ray shadowRay = new Ray(shiftedHead, intersection.l.scale(-1d));
+      var shadowIntersections = _scene.geometries.calcIntersections(shadowRay);
+      if (shadowIntersections == null) return true;
+      double lightDistance = intersection.light.getDistance(intersection.point);
+      return shadowIntersections.stream()
+         .noneMatch(si -> si.point.distance(shiftedHead) < lightDistance);
    }
 
    /**
