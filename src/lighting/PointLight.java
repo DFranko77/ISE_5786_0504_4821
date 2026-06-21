@@ -16,6 +16,10 @@ public class PointLight extends Light implements LightSource {
    private double _kL = 0d;
    /** Quadratic attenuation coefficient. */
    private double _kQ = 0d;
+   /** Radius of the emitting area; {@code 0} keeps the source point-sized (hard shadows). */
+   private double _size = 0d;
+   /** Number of shadow rays sampled across the area when {@code _size > 0}. */
+   private int _numOfRays = 1;
 
    /**
     * Creates a point light.
@@ -59,6 +63,48 @@ public class PointLight extends Light implements LightSource {
    public PointLight setKq(double kQ) {
       _kQ = kQ;
       return this;
+   }
+
+   /**
+    * Sets the radius of the light's emitting area. {@code 0} (the default) keeps
+    * the source point-sized — the existing hard-shadow behavior. A positive
+    * radius turns this into an area light: combined with {@link #setNumOfRays}
+    * (&gt; 1) it produces soft shadows.
+    *
+    * @param size area radius (&ge; 0)
+    * @return this light for chaining
+    */
+   public PointLight setSize(double size) {
+      _size = size;
+      return this;
+   }
+
+   /**
+    * Sets how many shadow rays are sampled across the light's area. Has no
+    * effect unless {@link #setSize} is also positive; {@code 1} (the default)
+    * keeps the single-ray hard shadow.
+    *
+    * @param numOfRays number of soft-shadow sample rays (&ge; 1)
+    * @return this light for chaining
+    */
+   public PointLight setNumOfRays(int numOfRays) {
+      _numOfRays = numOfRays;
+      return this;
+   }
+
+   @Override
+   public double getRadius() {
+      return _size;
+   }
+
+   @Override
+   public int getNumOfRays() {
+      return _numOfRays;
+   }
+
+   @Override
+   public Point getPosition() {
+      return _position;
    }
 
    @Override

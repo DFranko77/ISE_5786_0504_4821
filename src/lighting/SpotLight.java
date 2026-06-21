@@ -40,6 +40,16 @@ public class SpotLight extends PointLight {
       return (SpotLight) super.setKq(kQ);
    }
 
+   @Override
+   public SpotLight setSize(double size) {
+      return (SpotLight) super.setSize(size);
+   }
+
+   @Override
+   public SpotLight setNumOfRays(int numOfRays) {
+      return (SpotLight) super.setNumOfRays(numOfRays);
+   }
+
    /**
     * Sets the narrow-beam exponent for projector-like spotlight behavior.
     *

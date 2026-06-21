@@ -2,12 +2,15 @@ package renderer;
 
 import geometries.api.Intersectable.Intersection;
 import lighting.LightSource;
+import primitives.Blackboard;
 import primitives.Color;
 import primitives.Double3;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
 import scene.Scene;
+
+import java.util.List;
 
 /**
  * Basic ray tracer that returns scene background or ambient color.
@@ -163,9 +166,43 @@ class SimpleRayTracer extends RayTracerBase {
    private Double3 transparency(Intersection intersection, LightSource light, Vector l, Vector n) {
       Vector shift = n.scale(intersection.vNormal < 0 ? DELTA : -DELTA);
       Point shiftedHead = intersection.point.add(shift);
-      Ray shadowRay = new Ray(shiftedHead, l.scale(-1d));
-      double lightDistance = light.getDistance(intersection.point);
-      var shadowIntersections = _scene.geometries.calcIntersections(shadowRay, lightDistance);
+
+      double radius = light.getRadius();
+      Point lightPosition = light.getPosition();
+      // Hard shadow (default): a point-sized light fires a single ray at its center.
+      if (radius <= 0d || light.getNumOfRays() <= 1 || lightPosition == null) {
+         return shadowRayTransparency(shiftedHead, l.scale(-1d), light.getDistance(intersection.point));
+      }
+
+      // Soft shadow: sample the light's disk (oriented orthogonal to l) and
+      // average the per-ray transparency. Occluded samples contribute zero,
+      // which is what yields gradual penumbrae and the sunset effect.
+      List<Point> samples = new Blackboard()
+         .setSize(radius)
+         .setNumOfRays(light.getNumOfRays())
+         .orient(lightPosition, l)
+         .points();
+      Double3 ktrSum = Double3.ZERO;
+      for (Point sample : samples) {
+         Vector toSample = sample.subtract(shiftedHead);
+         ktrSum = ktrSum.add(shadowRayTransparency(shiftedHead, toSample, toSample.length()));
+      }
+      return ktrSum.divide(samples.size());
+   }
+
+   /**
+    * Accumulates the transparency factor along a single shadow ray, multiplying
+    * the {@code kT} of every partially transparent blocker between the shaded
+    * point and the light sample.
+    *
+    * @param origin      shifted shadow-ray origin (already offset off the surface)
+    * @param direction   direction toward the light (or light sample)
+    * @param maxDistance distance to the light (or light sample); blockers beyond it are ignored
+    * @return transparency factor per channel; {@link Double3#ZERO} if fully shadowed
+    */
+   private Double3 shadowRayTransparency(Point origin, Vector direction, double maxDistance) {
+      Ray shadowRay = new Ray(origin, direction);
+      var shadowIntersections = _scene.geometries.calcIntersections(shadowRay, maxDistance);
       if (shadowIntersections == null) return Double3.ONE;
       Double3 ktr = Double3.ONE;
       for (Intersection hit : shadowIntersections) {

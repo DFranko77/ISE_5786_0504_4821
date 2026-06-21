@@ -2,7 +2,11 @@ package renderer;
 
 import static primitives.Util.isZero;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.MissingResourceException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import primitives.Color;
 import primitives.Point;
@@ -53,6 +57,25 @@ public class Camera implements Cloneable {
    /** Ray tracer used for converting rays into colors. */
    private RayTracerBase _rayTracer;
 
+   /** Selected rendering strategy (single-threaded by default). */
+   private RenderMode _renderMode = RenderMode.SINGLE;
+   /** Worker-thread count used by {@link RenderMode#THREADS}; defaults to all cores. */
+   private int _threadsCount = Runtime.getRuntime().availableProcessors();
+
+   /**
+    * Rendering strategy. Two parallel methods are provided in addition to the
+    * single-threaded baseline; a test chooses between them via
+    * {@link Builder#setRenderMode(RenderMode)}.
+    */
+   public enum RenderMode {
+      /** One thread, pixel-by-pixel — the baseline the speedup is measured against. */
+      SINGLE,
+      /** Parallel method #1: a parallel Java stream over the image rows. */
+      STREAM,
+      /** Parallel method #2: a pool of threads pulling pixels from a shared counter. */
+      THREADS
+   }
+
    /** Private constructor; camera instances are created through the builder. */
    private Camera() {
    }
@@ -99,9 +122,69 @@ public class Camera implements Cloneable {
       if (_rayTracer == null)
          throw new IllegalStateException("Ray tracer is not initialized");
 
-      for (int i = 0; i < _nY; i++) {
-         for (int j = 0; j < _nX; j++) {
+      return switch (_renderMode) {
+         case SINGLE -> renderImageSingle();
+         case STREAM -> renderImageStream();
+         case THREADS -> renderImageThreads();
+      };
+   }
+
+   /**
+    * Single-threaded render: traces every pixel on the calling thread. This is
+    * the baseline against which the two parallel methods' speedup is measured.
+    *
+    * @return this camera
+    */
+   private Camera renderImageSingle() {
+      for (int i = 0; i < _nY; i++)
+         for (int j = 0; j < _nX; j++)
             castRay(_nX, _nY, j, i);
+      return this;
+   }
+
+   /**
+    * Parallel method #1 — parallel Java stream. The JDK fork/join pool splits the
+    * image rows across the available cores; each row is then traced sequentially.
+    * Simple and declarative.
+    *
+    * @return this camera
+    */
+   private Camera renderImageStream() {
+      IntStream.range(0, _nY).parallel().forEach(i -> {
+         for (int j = 0; j < _nX; j++)
+            castRay(_nX, _nY, j, i);
+      });
+      return this;
+   }
+
+   /**
+    * Parallel method #2 — a fixed pool of worker threads that each pull the next
+    * pixel index from a shared {@link AtomicInteger} until the image is finished.
+    * Handing out work one pixel at a time keeps cheap (background) and expensive
+    * (glass/shadow) pixels balanced across the threads. Uses {@link #_threadsCount}
+    * threads.
+    *
+    * @return this camera
+    */
+   private Camera renderImageThreads() {
+      final int total = _nX * _nY;
+      final AtomicInteger nextPixel = new AtomicInteger(0);
+      List<Thread> threads = new LinkedList<>();
+
+      for (int t = 0; t < _threadsCount; t++) {
+         threads.add(new Thread(() -> {
+            int pixel;
+            while ((pixel = nextPixel.getAndIncrement()) < total)
+               castRay(_nX, _nY, pixel % _nX, pixel / _nX);
+         }));
+      }
+
+      threads.forEach(Thread::start);
+      for (Thread thread : threads) {
+         try {
+            thread.join();
+         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
          }
       }
       return this;
@@ -291,6 +374,34 @@ public class Camera implements Cloneable {
             return setRayTracer(new SimpleRayTracer(scene));
          }
          throw new IllegalArgumentException("Unsupported ray tracer type: " + rayTracerType);
+      }
+
+      /**
+       * Selects the rendering strategy: single-threaded, or one of the two
+       * parallel methods ({@link RenderMode#STREAM} or {@link RenderMode#THREADS}).
+       *
+       * @param mode rendering mode
+       * @return this builder
+       */
+      public Builder setRenderMode(RenderMode mode) {
+         if (mode == null)
+            throw new IllegalArgumentException("Render mode must not be null");
+         _camera._renderMode = mode;
+         return this;
+      }
+
+      /**
+       * Sets the number of worker threads used by {@link RenderMode#THREADS}.
+       * Defaults to the number of available processors.
+       *
+       * @param threadsCount positive worker-thread count
+       * @return this builder
+       */
+      public Builder setThreadsCount(int threadsCount) {
+         if (threadsCount < 1)
+            throw new IllegalArgumentException("Threads count must be at least 1");
+         _camera._threadsCount = threadsCount;
+         return this;
       }
 
       /**

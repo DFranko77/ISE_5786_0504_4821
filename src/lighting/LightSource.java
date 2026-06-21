@@ -32,4 +32,35 @@ public interface LightSource {
     * @return distance to the light source
     */
    double getDistance(Point point);
+
+   /**
+    * Returns the radius of the light's emitting area. A radius of {@code 0}
+    * means a point-sized source (hard shadows); a positive radius enables
+    * soft shadows by sampling across the disk.
+    *
+    * @return area radius, or {@code 0} for a point-sized source
+    */
+   default double getRadius() {
+      return 0d;
+   }
+
+   /**
+    * Returns how many shadow rays to sample across the light's area. A value of
+    * {@code 1} (with a zero radius) yields the single-ray hard shadow.
+    *
+    * @return number of soft-shadow sample rays
+    */
+   default int getNumOfRays() {
+      return 1;
+   }
+
+   /**
+    * Returns the position of the light source, or {@code null} for sources that
+    * have no position (e.g. a directional light) and therefore no shadow area.
+    *
+    * @return light position, or {@code null}
+    */
+   default Point getPosition() {
+      return null;
+   }
 }
