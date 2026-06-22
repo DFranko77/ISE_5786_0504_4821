@@ -36,6 +36,13 @@ import scene.Scene;
 public class BeachBedScene {
 
     /**
+     * Master on/off switch for the BVH acceleration. The rendered image is
+     * identical either way — this only changes speed, so flip it to {@code false}
+     * to time the slow brute-force render and measure the speedup.
+     */
+    private static final boolean USE_BVH = true;
+
+    /**
      * Rendering strategy — the choice between the single-threaded baseline and
      * the two parallel methods is made here, from the test. {@code THREADS} and
      * {@code STREAM} both multithread; {@code SINGLE} is the baseline for timing.
@@ -52,6 +59,11 @@ public class BeachBedScene {
         addLounger(scene);
         addParasol(scene);
         addLights(scene);
+
+        // Reorganize the scene into a Bounding Volume Hierarchy so each ray skips
+        // whole groups of geometry whose box it misses — same image, far faster.
+        if (USE_BVH)
+            scene.geometries.buildBVH();
 
         Camera.getBuilder()
                 .setLocation(new Point(60, 18, 205))

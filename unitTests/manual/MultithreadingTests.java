@@ -60,6 +60,7 @@ class MultithreadingTests {
       BeachScene.addLounger(scene, new Point(118, -60, -72), 0.78);
       BeachScene.addLights(scene);
 
+      scene.geometries.buildBVH();
       return scene;
    }
 

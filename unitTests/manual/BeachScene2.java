@@ -36,6 +36,13 @@ public class BeachScene2 {
     /** Shadow-ray samples used when {@link #SOFT_SHADOWS} is on — larger = less noise, slower. */
     private static final int SUN_RAYS = 100;
     /**
+     * Master on/off switch for the BVH acceleration. The rendered image is
+     * identical either way — this only changes speed, so flip it to {@code false}
+     * to time the slow brute-force render and measure the speedup.
+     */
+    private static final boolean USE_BVH = true;
+
+    /**
      * Rendering strategy — the choice between the single-threaded baseline and
      * the two parallel methods is made here, from the test. {@code THREADS} and
      * {@code STREAM} both multithread; {@code SINGLE} is the baseline for timing.
@@ -78,6 +85,11 @@ public class BeachScene2 {
             BeachScene.addLights(scene, SUN_RADIUS, SUN_RAYS);
         else
             BeachScene.addLights(scene);
+
+        // Reorganize the scene into a Bounding Volume Hierarchy so each ray skips
+        // whole groups of geometry whose box it misses — same image, far faster.
+        if (USE_BVH)
+            scene.geometries.buildBVH();
 
         // Camera moved to the right and rotated back toward the scene centre.
         // Compared with the original (location (0,35,300) looking straight down

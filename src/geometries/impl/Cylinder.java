@@ -1,5 +1,6 @@
 package geometries.impl;
 
+import primitives.AABB;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
@@ -57,6 +58,19 @@ public class Cylinder extends Tube {
 
         Point axisPoint = _axis.getPoint(projection);
         return point.subtract(axisPoint).normalize();
+    }
+
+    /**
+     * Conservative bounding box of the finite cylinder: the union of a sphere-box
+     * around each cap center, each expanded by the radius. This over-estimates the
+     * true box for a tilted cylinder but is always correct and cheap to compute.
+     *
+     * @return enclosing box
+     */
+    @Override
+    protected AABB calcBoundingBox() {
+        return AABB.fromCenterRadius(_axis.origin(), _radius)
+            .union(AABB.fromCenterRadius(_topCenter, _radius));
     }
 
     @Override

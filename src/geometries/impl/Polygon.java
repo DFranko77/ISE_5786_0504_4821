@@ -6,6 +6,7 @@ import static primitives.Util.isZero;
 import java.util.List;
 
 import geometries.api.Geometry;
+import primitives.AABB;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
@@ -86,6 +87,9 @@ public class Polygon extends Geometry {
     */
    @Override
    public Vector getNormal(Point point) { return _plane.getNormal(point); }
+
+   @Override
+   protected AABB calcBoundingBox() { return AABB.fromPoints(_vertices); }
 
    /**
     * Finds the intersection between a ray and this polygon.

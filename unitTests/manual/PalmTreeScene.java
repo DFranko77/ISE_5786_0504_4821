@@ -41,6 +41,13 @@ public class PalmTreeScene {
     /** Coconut brown. */
     private static final Color COCONUT_COLOR = new Color(60, 38, 20);
     /**
+     * Master on/off switch for the BVH acceleration. The rendered image is
+     * identical either way — this only changes speed, so flip it to {@code false}
+     * to time the slow brute-force render and measure the speedup.
+     */
+    private static final boolean USE_BVH = true;
+
+    /**
      * Rendering strategy — the choice between the single-threaded baseline and
      * the two parallel methods is made here, from the test. {@code THREADS} and
      * {@code STREAM} both multithread; {@code SINGLE} is the baseline for timing.
@@ -68,6 +75,11 @@ public class PalmTreeScene {
                 .setKl(2E-4).setKq(1E-6));
         scene.lights.add(new PointLight(new Color(80, 90, 100),
                 new Point(160, 120, 160)).setKl(3E-4).setKq(1.5E-6));
+
+        // Reorganize the scene into a Bounding Volume Hierarchy so each ray skips
+        // whole groups of geometry whose box it misses — same image, far faster.
+        if (USE_BVH)
+            scene.geometries.buildBVH();
 
         Camera.getBuilder()
                 .setLocation(new Point(0, 5, 150))
