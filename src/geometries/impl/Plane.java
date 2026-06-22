@@ -1,7 +1,6 @@
 package geometries.impl;
 
 import geometries.api.Geometry;
-import primitives.AABB;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
@@ -51,16 +50,6 @@ public class Plane extends Geometry {
     @Override
     public Vector getNormal(Point point) {
         return _normal;
-    }
-
-    /**
-     * A plane is infinite, so it has no finite bounding box and is always tested.
-     *
-     * @return {@code null}
-     */
-    @Override
-    protected AABB calcBoundingBox() {
-        return null;
     }
 
     @Override

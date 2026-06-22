@@ -1,6 +1,5 @@
 package geometries.impl;
 
-import primitives.AABB;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
@@ -37,11 +36,6 @@ public class Sphere extends RadialGeometry {
     @Override
     public Vector getNormal(Point point) {
         return point.subtract(_center).normalize();
-    }
-
-    @Override
-    protected AABB calcBoundingBox() {
-        return AABB.fromCenterRadius(_center, _radius);
     }
 
     /**

@@ -2,16 +2,16 @@
 
 Java ray-tracing engine built for the software-engineering ray-tracing course:
 3D geometry, a camera, a Phong lighting model, recursive reflection/refraction,
-shadows, and rendering acceleration.
+shadows, and multithreaded rendering.
 
 ## Overview
 
 This project implements:
 
-1. **Primitives**: `Point`, `Vector`, `Ray`, `Double3`, `Util`, `Color`, `Material`, `AABB`, `Blackboard`
+1. **Primitives**: `Point`, `Vector`, `Ray`, `Double3`, `Util`, `Color`, `Material`, `Blackboard`
 2. **Geometry API**: `Intersectable`, `Geometry`
 3. **Geometry implementations**: `Plane`, `Sphere`, `Triangle`, `Polygon`, `Tube`, `Cylinder`, `RadialGeometry`
-4. **Composite geometry**: `Geometries` (collection of intersectables with optional BVH acceleration)
+4. **Composite geometry**: `Geometries` (collection of intersectables)
 5. **Lighting**: `Light`, `LightSource`, `AmbientLight`, `DirectionalLight`, `PointLight`, `SpotLight`
 6. **Renderer**: `Camera` (with a nested `Builder`), `ImageWriter`, `RayTracerBase`, `SimpleRayTracer`, `RayTracerType`
 7. **Scene model**: `Scene` with background color, ambient light, geometries, and light sources
@@ -30,9 +30,8 @@ Core capabilities currently include:
 9. Shadows, including transparency-aware shadow rays through partially transparent bodies
 10. Recursive global effects: reflection (`kR`) and refraction/transparency (`kT`)
 11. Soft shadows via area light sources (light radius + multi-ray sampling)
-12. Rendering acceleration: a Bounding Volume Hierarchy (BVH) over the scene geometries
-13. Multithreaded rendering (parallel stream and thread-pool strategies)
-14. External scene loading from XML/JSON files
+12. Multithreaded rendering (parallel stream and thread-pool strategies)
+13. External scene loading from XML/JSON files
 
 ## Project Structure
 
@@ -42,7 +41,7 @@ src/
     api/          Intersectable, Geometry
     impl/         Plane, Sphere, Triangle, Polygon, Tube, Cylinder, RadialGeometry, Geometries
   lighting/       Light, LightSource, AmbientLight, DirectionalLight, PointLight, SpotLight
-  primitives/     Point, Vector, Ray, Double3, Util, Color, Material, AABB, Blackboard
+  primitives/     Point, Vector, Ray, Double3, Util, Color, Material, Blackboard
   renderer/       Camera, ImageWriter, RayTracerBase, SimpleRayTracer, RayTracerType
   scene/          Scene
     io/           SceneLoader, SceneParser, XmlSceneParser, JsonSceneParser, SceneParsingUtils
@@ -92,7 +91,7 @@ The module file `ISE_5786_0504_4821.iml` is configured with:
 The tests under `unitTests\renderer\` and `unitTests\manual\` render images and
 write them to the `images\` folder via `ImageWriter`. Run a test (for example
 `RenderTests`, `LightsTests`, `ShadowTests`, `TransparencyReflectionTests`,
-`SoftShadowTests`, `BVHTests`, or one of the `manual\` scenes) to regenerate the
+`SoftShadowTests`, or one of the `manual\` scenes) to regenerate the
 corresponding PNG.
 
 ## Rendering Features
@@ -122,9 +121,6 @@ corresponding PNG.
 
 ### Acceleration and performance
 
-- `Geometries.buildBVH()` reorganizes the scene into a Bounding Volume Hierarchy
-  using `AABB` boxes; unbounded geometries (infinite planes and tubes) are kept
-  outside the hierarchy.
 - `Camera` supports three render strategies via `Builder.setRenderMode(...)`:
   `SINGLE` (baseline), `STREAM` (parallel stream over rows), and `THREADS`
   (thread pool pulling pixels from a shared counter), with a configurable thread
@@ -175,54 +171,24 @@ The disk sampling itself is the geometry-only `primitives/Blackboard.java`; the
 area-light radius and sample count live on `lighting/PointLight.java`
 (`setSize` / `setNumOfRays`).
 
-### BVH and multithreading (runtime)
+### Multithreading (runtime)
 
-The acceleration features render the **same** image — the win is wall-clock
-time, not appearance. The beach scene (`BeachScene2`) is built from **834
-geometries** (3 environment + 6 props + 72 sailboat + 21 background + 700 across
-the two palm trees + 32 across the two loungers), so a ray that had to test every
-one would be slow; the BVH lets each ray skip whole groups whose bounding box it
-misses. Measured end to end:
+Multithreading renders the **same** image — the win is wall-clock time, not
+appearance. The thread pool spreads the pixels of a render across cores; on a
+multi-core machine the parallel modes come in well under the single-threaded
+baseline. `MultithreadingTests` renders the beach scene once per mode and prints
+the timings and speedups.
 
-| Configuration | Render time | Speedup |
-| --- | --- | --- |
-| No BVH, single-threaded (baseline) | 21.849 s | 1.0× |
-| BVH, single-threaded | 3.591 s | 6.1× |
-| No BVH, multithreaded | 3.051 s | 7.2× |
-| BVH + multithreaded | 0.955 s | 22.9× |
-
-BVH and multithreading are independent wins that compound: the BVH cuts the
-intersection work per ray, while the thread pool spreads pixels across cores.
-Soft shadows raise the ray count per pixel, so the BVH is also what keeps that
-quality affordable.
-
-**The call that makes the difference.** A single line, right before building the
-camera, reorganizes the flat geometry list into the hierarchy:
+**The call that makes the difference.** The render strategy is chosen on the
+camera builder:
 
 ```java
-// unitTests/manual/BeachScene2.java
-if (USE_BVH)
-    scene.geometries.buildBVH();   // flip USE_BVH to false to time the brute-force render
+// unitTests/manual/MultithreadingTests.java
+Camera camera = Camera.getBuilder()
+    // ...
+    .setRenderMode(mode)   // SINGLE (baseline), STREAM, or THREADS
+    .build();
 ```
-
-**Where it lives.** `Geometries.buildBVH()` partitions the scene into a recursive
-binary tree of bounding boxes (`src/geometries/impl/Geometries.java`). Unbounded
-geometries (infinite planes/tubes) have no finite box, so they stay at the top
-level and are always tested; everything else is split recursively:
-
-```java
-// src/geometries/impl/Geometries.java — build(items, depth, maxDepth)
-int splitAxis = chooseSplitAxis(items);                                   // "smallest box" heuristic
-items.sort(Comparator.comparingDouble(g -> g.getBoundingBox().centerCoord(splitAxis)));
-int mid = items.size() / 2;
-Intersectable left  = build(items.subList(0, mid), depth + 1, maxDepth);
-Intersectable right = build(items.subList(mid, items.size()), depth + 1, maxDepth);
-return new Geometries(left, right);                                       // internal node = two child boxes
-```
-
-At render time each ray first tests the node's `AABB` (`primitives/AABB.java`,
-slab method); if it misses the box, the entire subtree — potentially hundreds of
-the 834 geometries — is skipped, which is where the speedup comes from.
 
 ## Current Test Coverage Areas
 
@@ -235,7 +201,7 @@ the 834 geometries — is skipped, which is where the speedup comes from.
    - Lighting: `LightsTests`, `DirectionalLightTests`, `PointLightTests`, `SpotLightTests`, `MultiLightsTests`, `LightsFromFilesTests`
    - Shadows: `ShadowTests`, `SoftShadowTests`
    - Global effects: `TransparencyReflectionTests`
-   - Acceleration/performance: `BVHTests`, `MultithreadingTests`
+   - Acceleration/performance: `MultithreadingTests`
 4. `scene`: `SceneLoaderTests` (XML/JSON loading)
 5. `manual`: final-picture scenes (`BeachScene`, `BeachScene2`, `BeachBedScene`, `PalmTreeScene`)
 

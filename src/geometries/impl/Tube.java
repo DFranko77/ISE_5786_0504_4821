@@ -1,6 +1,5 @@
 package geometries.impl;
 
-import primitives.AABB;
 import primitives.Point;
 import primitives.Ray;
 import primitives.Vector;
@@ -46,17 +45,6 @@ public class Tube extends RadialGeometry {
         double projection = axisDirection.dotProduct(point.subtract(axisOrigin));
         Point axisPoint = _axis.getPoint(projection);
         return point.subtract(axisPoint).normalize();
-    }
-
-    /**
-     * A tube is infinitely long, so it has no finite bounding box and is always
-     * tested.
-     *
-     * @return {@code null}
-     */
-    @Override
-    protected AABB calcBoundingBox() {
-        return null;
     }
 
     @Override

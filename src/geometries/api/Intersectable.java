@@ -1,7 +1,6 @@
 package geometries.api;
 
 import lighting.LightSource;
-import primitives.AABB;
 import primitives.Material;
 import primitives.Point;
 import primitives.Ray;
@@ -14,10 +13,6 @@ import java.util.List;
  */
 public abstract class  Intersectable {
 
-    /** Cached conservative bounding box of this object (lazily computed). */
-    private AABB boundingBox;
-    /** Whether {@link #boundingBox} has already been computed. */
-    private boolean boxComputed = false;
     /**
      * Plain hit-data structure for a ray/geometry intersection.
      */
@@ -101,47 +96,8 @@ public abstract class  Intersectable {
      * @return list of geometry+point intersections within range, or {@code null}
      */
     public final List<Intersection> calcIntersections(Ray ray, double maxDistance) {
-        // BVH early-out: a finite box that the ray misses rules out every
-        // geometry inside it, so we skip the expensive intersection test.
-        // A null box marks an unbounded object (e.g. an infinite plane), which
-        // is always tested.
-        AABB box = getBoundingBox();
-        if (box != null && !box.hasIntersection(ray, maxDistance)) {
-            return null;
-        }
         return calcIntersectionsHelper(ray, maxDistance);
     }
-
-    /**
-     * Returns the conservative bounding box of this object, or {@code null} if
-     * the object is unbounded (such as an infinite plane or tube). The result is
-     * computed once and cached.
-     *
-     * @return bounding box, or {@code null} for unbounded objects
-     */
-    public AABB getBoundingBox() {
-        if (!boxComputed) {
-            boundingBox = calcBoundingBox();
-            boxComputed = true;
-        }
-        return boundingBox;
-    }
-
-    /**
-     * Discards the cached bounding box so it is recomputed on next access. Called
-     * by mutable composites whose contents changed.
-     */
-    protected void invalidateBoundingBox() {
-        boundingBox = null;
-        boxComputed = false;
-    }
-
-    /**
-     * Computes the conservative bounding box of this object.
-     *
-     * @return bounding box, or {@code null} when the object is unbounded
-     */
-    protected abstract AABB calcBoundingBox();
 
     /**
      * Internal intersection calculation hook for NVI-based APIs.

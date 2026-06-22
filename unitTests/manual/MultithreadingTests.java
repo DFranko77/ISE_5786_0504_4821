@@ -17,13 +17,10 @@ import java.util.Random;
  * Benchmark that demonstrates the two parallel rendering methods and lets the
  * choice between them be made (and measured) from a test.
  *
- * <p>It builds the full {@link BeachScene} (834 geometries, two palm trees) with
- * the BVH switched on, then renders it three times — once single-threaded, once
- * with each parallel method — and prints the render times and the speedup over
- * the single-threaded baseline. Because the BVH is on in <em>all three</em>
- * renders, the printed ratio isolates the multithreading speedup from the
- * acceleration-structure speedup, as the mini-project requires them to be
- * measured separately.</p>
+ * <p>It builds the full {@link BeachScene} (834 geometries, two palm trees),
+ * then renders it three times — once single-threaded, once with each parallel
+ * method — and prints the render times and the speedup over the single-threaded
+ * baseline, isolating the multithreading speedup as the mini-project requires.</p>
  *
  * <p>Run {@link #compareRenderModes()} and read the console. On a multi-core
  * machine the two parallel methods should come in well under the single-threaded
@@ -44,9 +41,9 @@ class MultithreadingTests {
 
    /**
     * Builds the full beach scene (same geometry as {@code beach.png}) with hard
-    * shadows and the BVH enabled, so every render mode does the identical work.
+    * shadows, so every render mode does the identical work.
     *
-    * @return the populated, BVH-accelerated scene
+    * @return the populated scene
     */
    private static Scene buildBeach() {
       Scene scene = new Scene("Beach (benchmark)")
@@ -63,7 +60,6 @@ class MultithreadingTests {
       BeachScene.addLounger(scene, new Point(118, -60, -72), 0.78);
       BeachScene.addLights(scene);
 
-      scene.geometries.buildBVH();
       return scene;
    }
 
