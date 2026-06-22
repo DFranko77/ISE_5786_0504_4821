@@ -30,7 +30,7 @@ public class BeachScene2 {
      * low sun an area light (soft penumbrae); {@code false} renders with the
      * point-sized hard-shadow sun, identical to {@code beach.png}.
      */
-    private static final boolean SOFT_SHADOWS = true;
+    private static final boolean SOFT_SHADOWS = false;
     /** Sun disk radius used when {@link #SOFT_SHADOWS} is on — larger = softer, wider penumbra. */
     private static final double SUN_RADIUS = 200d;
     /** Shadow-ray samples used when {@link #SOFT_SHADOWS} is on — larger = less noise, slower. */
